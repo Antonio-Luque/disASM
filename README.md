@@ -12,4 +12,4 @@ A Disassembler for ZX Spectrum. Based on Small Computer Monitor ([SCM](https://s
 ### Usage:
 - LOAD ""CODE \<address\> (default: 57600)
 - RANDOMIZE USR \<address\>
-- Input "from" address to start disassembly and "to" address to end disassembly.
+- Input "from" address (in hexadecimal) to start disassembly and "to" address (in hexadecimal) to end disassembly.
