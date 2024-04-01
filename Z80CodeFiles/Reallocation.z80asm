@@ -1,0 +1,48 @@
+﻿; **********************************************************************************************************************
+; **  Reallocation                                                                        by HiSoft Devpac, (C) 1983  **
+; **                                                                                                                  **
+; **  This piece of code has been disassembled from MONS v4.1 and adapted by Antonio Luque                            **
+; **********************************************************************************************************************
+
+
+; Reallocation: Reallocate pointers and calls pointed to by the 'Realloc_X' tags
+;   On entry: HL = address of reallocation addresses (Realloc_Addrs)
+;             BC = address of program start
+;   On exit:  BC IX IY I AF' BC' DE' HL' preserved
+; This space is reused for the internal stack
+Reallocation:
+                    ld      e, (hl)                     ; DE = relative reallocation address
+                    inc     hl
+                    ld      d, (hl)
+                    inc     hl                          ; Move HL to next relative reallocation address
+                    ld      a, d                        ; last address?
+                    or      e
+                    jr      z, Re_Entry                 ; yes, reallocation finished
+
+                    ex      de, hl                      ; HL = relative reallocation address
+                    add     hl, bc                      ; HL points to address parameter of the instr. at 'Realloc_X'
+                    push    de                          ; Store next relative reallocation address
+                    push    hl                          ; Store pointer to address parameter of the instruction
+                    ld      e, (hl)                     ; Save the content of the address parameter in DE
+                    inc     hl
+                    ld      d, (hl)
+                    ex      de, hl                      ; Calculate absolute address in HL
+                    add     hl, bc
+                    ex      de, hl                      ; DE = absolute address parameter of the instruction
+                    pop     hl                          ; Restore pointer to address parameter of the instruction
+                    ld      (hl), e                     ; Update address parameter of the instruction with calculated
+                    inc     hl                          ;   absolute address
+                    ld      (hl), d
+                    pop     hl                          ; Restore next relative reallocation address
+                    jr      Reallocation                ; Repeat again
+
+                    DEFS    16                          ; Add more space for stack
+
+; Put 'JP Init' at the start of program for the re-entry
+Re_Entry:
+                    ld      a, $C3                      ; 'JP' opcode
+; From this point on, all address parameters of the instructions pointed to by the 'Realloc_X' tags
+;  are updated with the corresponding absolute address
+Realloc_A           ld      ($0000), a                  ; Put it at program start
+Realloc_B           ld      hl, Init-START              ; HL points to Init
+Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction

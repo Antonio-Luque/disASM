@@ -1,0 +1,466 @@
+; **********************************************************************************************************************
+; **  Disassembler data                                                                         by Stephen C Cousins  **
+; **********************************************************************************************************************
+
+
+kDisSubsL:          EQU     $0D                         ; Last operand substitution string
+kDisBracHL:         EQU     $15                         ; Bracketed HL
+kDisHL:             EQU     $18                         ; Operation string 'HL'
+kDisJR:             EQU     $1B                         ; Operation string 'JR'
+kDisDJNZ:           EQU     $1C                         ; Operation string 'DJNZ'
+kDisJP:             EQU     $1E                         ; Operation string 'JP'
+kDisH               EQU     $6E                         ; Operation string 'H'
+kDisL               EQU     $71                         ; Operation string 'L'
+kDisOpMask:         EQU     $3F                         ; Operand 1 mask to exclude pre-code bits
+
+
+; Disassembler string table: (DisString)
+; This contains many string which are not null terminated and have no length 
+; value. Instead they are tightly packed with the start of each string 
+; indicated by the first character having bit 7 set.
+DisString:
+                    DEFB    $80                         ; String $01 = 
+                    DEFB    $80+'n'                     ; String $02 = n
+                    DEFB    $80+'('
+                    DEFM    "n)"                        ; String $03 = (n)
+                    DEFB    $80+'n','n'                 ; String $04 = nn
+                    DEFB    $80+'('
+                    DEFM    "nn)"                       ; String $05 = (nn)
+                    DEFB    $80+'r'                     ; String $06 = r
+                    DEFB    $80+'r','2'                 ; String $07 = r2
+                    DEFB    $80+'d','d'                 ; String $08 = dd
+                    DEFB    $80+'q','q'                 ; String $09 = qq
+                    DEFB    $80+'c'                     ; String $0A = c
+                    DEFB    $80+'c','c'                 ; String $0B = cc
+                    DEFB    $80+'t'                     ; String $0C = t
+                    DEFB    $80+'b'                     ; String $0D = b
+                    DEFB    $80+'B'
+                    DEFM    "CDEHL-A"                   ; String $0E = BCDEHL-A
+                    DEFB    $80+'B'
+                    DEFM    "CDE**SP"                   ; String $0F = BCDE**SP
+                    DEFB    $80+'B'
+                    DEFM    "CDE**AF"                   ; String $10 = BCDE**AF
+                    DEFB    $80+'N'
+                    DEFM    "ZZ.NCC."                   ; String $11 = NZZ.NCC.
+                    DEFB    $80+'N'
+                    DEFM    "ZZ.NCC.POPEP.M."           ; String $12 = NZZ.NCC.POPEP.M.
+                    DEFB    $80+'0'
+                    DEFM    "008162432404856"           ; String $13 = 0008101820283038
+                    DEFB    $80+'0'
+                    DEFM    "1234567"                   ; String $14 = 01234567
+                    DEFB    $80+'('
+                    DEFM    "HL)"                       ; String $15 = (HL)
+                    DEFB    $80+'('
+                    DEFM    "IX+"                       ; String $16 = (IX+
+                    DEFB    $80+'('
+                    DEFM    "IY+"                       ; String $17 = (IY+
+                    DEFB    $80+'H','L'                 ; String $18 = HL
+                    DEFB    $80+'I','X'                 ; String $19 = IX
+                    DEFB    $80+'I','Y'                 ; String $1A = IY
+                    DEFB    $80+'J','R'                 ; String $1B = JR
+                    DEFB    $80+'D'
+                    DEFM    "JNZ"                       ; String $1C = DJNZ
+                    DEFB    $80+'R'
+                    DEFM    "ST"                        ; String $1D = RST
+                    DEFB    $80+'J','P'                 ; String $1E = JP
+                    DEFB    $80+'C'
+                    DEFM    "ALL"                       ; String $1F = CALL
+                    DEFB    $80+'R'
+                    DEFM    "ET"                        ; String $20 = RET
+                    DEFB    $80+'R'
+                    DEFM    "ETI"                       ; String $21 = RETI
+                    DEFB    $80+'R'
+                    DEFM    "ETN"                       ; String $22 = RETN
+                    DEFB    $80+'A'                     ; String $23 = A
+                    DEFB    $80+'('
+                    DEFM    "SP)"                       ; String $24 = (SP)
+                    DEFB    $80+'A','F'                 ; String $25 = AF
+                    DEFB    $80+'D','E'                 ; String $26 = DE
+                    DEFB    $80+'0'                     ; String $27 = 0
+                    DEFB    $80+'1'                     ; String $28 = 1
+                    DEFB    $80+'2'                     ; String $29 = 2
+                    DEFB    $80+'('
+                    DEFM    "BC)"                       ; String $2A = (BC)
+                    DEFB    $80+'('
+                    DEFM    "DE)"                       ; String $2B = (DE)
+                    DEFB    $80+'S','P'                 ; String $2C = SP
+                    DEFB    $80+'I'                     ; String $2D = I
+                    DEFB    $80+'R'                     ; String $2E = R
+                    DEFB    $80+'('
+                    DEFM    "C)"                        ; String $2F = (C)
+                    DEFB    $80+'A'
+                    DEFM    "F'"                        ; String $30 = AF'
+                    DEFB    $80+'A'
+                    DEFM    "DC"                        ; String $31 = ADC
+                    DEFB    $80+'A'
+                    DEFM    "DD"                        ; String $32 = ADD
+                    DEFB    $80+'A'
+                    DEFM    "ND"                        ; String $33 = AND
+                    DEFB    $80+'B'
+                    DEFM    "IT"                        ; String $34 = BIT
+                    DEFB    $80+'C'
+                    DEFM    "CF"                        ; String $35 = CCF
+                    DEFB    $80+'C'
+                    DEFM    "P"                         ; String $36 = CP
+                    DEFB    $80+'C'                       
+                    DEFM    "PD"                        ; String $37 = CPD
+                    DEFB    $80+'C'                       
+                    DEFM    "PDR"                       ; String $38 = CPDR
+                    DEFB    $80+'C'                       
+                    DEFM    "PI"                        ; String $39 = CPI
+                    DEFB    $80+'C'                       
+                    DEFM    "PIR"                       ; String $3A = CPIR
+                    DEFB    $80+'C'                       
+                    DEFM    "PL"                        ; String $3B = CPL
+                    DEFB    $80+'D'                       
+                    DEFM    "AA"                        ; String $3C = DAA
+                    DEFB    $80+'D'                       
+                    DEFM    "EC"                        ; String $3D = DEC
+                    DEFB    $80+'D'                       
+                    DEFM    "I"                         ; String $3E = DI
+                    DEFB    $80+'E'                       
+                    DEFM    "I"                         ; String $3F = EI
+                    DEFB    $80+'E'                       
+                    DEFM    "X"                         ; String $40 = EX
+                    DEFB    $80+'E'                       
+                    DEFM    "XX"                        ; String $41 = EXX
+                    DEFB    $80+'H'                       
+                    DEFM    "ALT"                       ; String $42 = HALT
+                    DEFB    $80+'I'                       
+                    DEFM    "M"                         ; String $43 = IM
+                    DEFB    $80+'I'                       
+                    DEFM    "N"                         ; String $44 = IN
+                    DEFB    $80+'I'                       
+                    DEFM    "NC"                        ; String $45 = INC
+                    DEFB    $80+'I'                       
+                    DEFM    "ND"                        ; String $46 = IND
+                    DEFB    $80+'I'                       
+                    DEFM    "NDR"                       ; String $47 = INDR
+                    DEFB    $80+'I'                       
+                    DEFM    "NI"                        ; String $48 = INI
+                    DEFB    $80+'I'                       
+                    DEFM    "NIR"                       ; String $49 = INIR
+                    DEFB    $80+'L'                       
+                    DEFM    "D"                         ; String $4A = LD
+                    DEFB    $80+'L'                       
+                    DEFM    "DD"                        ; String $4B = LDD
+                    DEFB    $80+'L'                       
+                    DEFM    "DDR"                       ; String $4C = LDDR
+                    DEFB    $80+'L'                       
+                    DEFM    "DI"                        ; String $4D = LDI
+                    DEFB    $80+'L'                       
+                    DEFM    "DIR"                       ; String $4E = LDIR
+                    DEFB    $80+'N'                       
+                    DEFM    "EG"                        ; String $4F = NEG
+                    DEFB    $80+'N'                       
+                    DEFM    "OP"                        ; String $50 = NOP
+                    DEFB    $80+'O'                       
+                    DEFM    "R"                         ; String $51 = OR
+                    DEFB    $80+'O'                       
+                    DEFM    "TDR"                       ; String $52 = OTDR
+                    DEFB    $80+'O'                       
+                    DEFM    "TIR"                       ; String $53 = OTIR
+                    DEFB    $80+'O'                       
+                    DEFM    "UT"                        ; String $54 = OUT
+                    DEFB    $80+'O'                       
+                    DEFM    "UTD"                       ; String $55 = OUTD
+                    DEFB    $80+'O'                       
+                    DEFM    "UTI"                       ; String $56 = OUTI
+                    DEFB    $80+'P'                       
+                    DEFM    "OP"                        ; String $57 = POP
+                    DEFB    $80+'P'                       
+                    DEFM    "USH"                       ; String $58 = PUSH
+                    DEFB    $80+'R'                       
+                    DEFM    "ES"                        ; String $59 = RES
+                    DEFB    $80+'R'                       
+                    DEFM    "L"                         ; String $5A = RL
+                    DEFB    $80+'R'                       
+                    DEFM    "LA"                        ; String $5B = RLA
+                    DEFB    $80+'R'                       
+                    DEFM    "LC"                        ; String $5C = RLC
+                    DEFB    $80+'R'                       
+                    DEFM    "LCA"                       ; String $5D = RLCA
+                    DEFB    $80+'R'                       
+                    DEFM    "LD"                        ; String $5E = RLD
+                    DEFB    $80+'R'                       
+                    DEFM    "R"                         ; String $5F = RR
+                    DEFB    $80+'R'                       
+                    DEFM    "RA"                        ; String $60 = RRA
+                    DEFB    $80+'R'                       
+                    DEFM    "RC"                        ; String $61 = RRC
+                    DEFB    $80+'R'                       
+                    DEFM    "RCA"                       ; String $62 = RRCA
+                    DEFB    $80+'R'                       
+                    DEFM    "RD"                        ; String $63 = RRD
+                    DEFB    $80+'S'                       
+                    DEFM    "BC"                        ; String $64 = SBC
+                    DEFB    $80+'S'                       
+                    DEFM    "CF"                        ; String $65 = SCF
+                    DEFB    $80+'S'                       
+                    DEFM    "ET"                        ; String $66 = SET
+                    DEFB    $80+'S'                       
+                    DEFM    "LA"                        ; String $67 = SLA
+                    DEFB    $80+'S'                       
+                    DEFM    "LL"                        ; String $68 = SLL
+                    DEFB    $80+'S'                       
+                    DEFM    "RA"                        ; String $69 = SRA
+                    DEFB    $80+'S'                       
+                    DEFM    "RL"                        ; String $6A = SRL
+                    DEFB    $80+'S'                       
+                    DEFM    "UB"                        ; String $6B = SUB
+                    DEFB    $80+'X'                       
+                    DEFM    "OR"                        ; String $6C = XOR
+                    DEFB    $80+'?'                       
+                    DEFM    "???"                       ; String $6D = ????
+                    DEFB    $80+'H'                     ; String $6E = H
+                    DEFB    $80+'I'
+                    DEFM    "XH"                        ; String $6F = IXH
+                    DEFB    $80+'I'
+                    DEFM    "YH"                        ; String $70 = IYH
+                    DEFB    $80+'L'                     ; String $71 = L
+                    DEFB    $80+'I'
+                    DEFM    "XL"                        ; String $72 = IXL
+                    DEFB    $80+'I'
+                    DEFM    "YL"                        ; String $73 = IYL
+                    DEFB    $80
+
+; Instruction table: (DisInst)
+; The instruction table definition of the processor's instruction set.
+; Each instruction is described by 5 bytes:
+;    Byte 0:  Opcode value
+;    Byte 1:  Opcode mask
+;    Byte 2:  Operation string number
+;    Byte 3:  Operand #1 string number, plus bits 6-7 define precode
+;    Byte 4:  Operand #2 string number
+; The precode values code in bits 6-7 are:
+;    00xx xxxx = No precode
+;    10xx xxxx = Precode 0xCB
+;    11xx xxxx = Precode 0xED
+; Precodes are used by the processor's extended instructions
+DisInst:
+                    DEFB    $88, $F8, $31, $23, $07     ; Opcode: $88 - ADC  A   ,r2
+                    DEFB    $CE, $FF, $31, $23, $02     ; Opcode: $CE - ADC  A   ,n
+                    DEFB    $4A, $CF, $31, $D8, $08     ; Opcode: $4A - ADC  HL  ,dd
+                    DEFB    $80, $F8, $32, $23, $07     ; Opcode: $80 - ADD  A   ,r2
+                    DEFB    $C6, $FF, $32, $23, $02     ; Opcode: $C6 - ADD  A   ,n
+                    DEFB    $09, $CF, $32, $18, $08     ; Opcode: $09 - ADD  HL  ,dd
+                    DEFB    $A0, $F8, $33, $07, $01     ; Opcode: $A0 - AND  r2  ,
+                    DEFB    $E6, $FF, $33, $02, $01     ; Opcode: $E6 - AND  n   ,
+                    DEFB    $40, $C0, $34, $8D, $07     ; Opcode: $40 - BIT  b   ,r2
+                    DEFB    $C4, $C7, $1F, $0B, $04     ; Opcode: $C4 - CALL cc  ,nn
+                    DEFB    $CD, $FF, $1F, $04, $01     ; Opcode: $CD - CALL nn  ,
+                    DEFB    $3F, $FF, $35, $01, $01     ; Opcode: $3F - CCF      ,
+                    DEFB    $B8, $F8, $36, $07, $01     ; Opcode: $B8 - CP   r2  ,
+                    DEFB    $FE, $FF, $36, $02, $01     ; Opcode: $FE - CP   n   ,
+                    DEFB    $A9, $FF, $37, $C1, $01     ; Opcode: $A9 - CPD      ,
+                    DEFB    $B9, $FF, $38, $C1, $01     ; Opcode: $B9 - CPDR     ,
+                    DEFB    $A1, $FF, $39, $C1, $01     ; Opcode: $A1 - CPI      ,
+                    DEFB    $B1, $FF, $3A, $C1, $01     ; Opcode: $B1 - CPIR     ,
+                    DEFB    $2F, $FF, $3B, $01, $01     ; Opcode: $2F - CPL      ,
+                    DEFB    $27, $FF, $3C, $01, $01     ; Opcode: $27 - DAA      ,
+                    DEFB    $0B, $CF, $3D, $08, $01     ; Opcode: $0B - DEC  dd  ,
+                    DEFB    $05, $C7, $3D, $06, $01     ; Opcode: $05 - DEC  r   ,
+                    DEFB    $F3, $FF, $3E, $01, $01     ; Opcode: $F3 - DI       ,
+                    DEFB    $10, $FF, $1C, $02, $01     ; Opcode: $10 - DJNZ n   ,
+                    DEFB    $FB, $FF, $3F, $01, $01     ; Opcode: $FB - EI       ,
+                    DEFB    $E3, $FF, $40, $24, $18     ; Opcode: $E3 - EX   (SP),HL
+                    DEFB    $08, $FF, $40, $25, $30     ; Opcode: $08 - EX   AF  ,AF'
+                    DEFB    $EB, $FF, $40, $26, $18     ; Opcode: $EB - EX   DE  ,HL
+                    DEFB    $D9, $FF, $41, $01, $01     ; Opcode: $D9 - EXX      ,
+                    DEFB    $76, $FF, $42, $01, $01     ; Opcode: $76 - HALT     ,
+                    DEFB    $46, $FF, $43, $E7, $01     ; Opcode: $46 - IM   0   ,
+                    DEFB    $56, $FF, $43, $E8, $01     ; Opcode: $56 - IM   1   ,
+                    DEFB    $5E, $FF, $43, $E9, $01     ; Opcode: $5E - IM   2   ,
+                    DEFB    $40, $C7, $44, $C6, $2F     ; Opcode: $40 - IN   r   ,(C)
+                    DEFB    $DB, $FF, $44, $23, $03     ; Opcode: $DB - IN   A   ,(n)
+                    DEFB    $03, $CF, $45, $08, $01     ; Opcode: $03 - INC  dd  ,
+                    DEFB    $04, $C7, $45, $06, $01     ; Opcode: $04 - INC  r   ,
+                    DEFB    $AA, $FF, $46, $C1, $01     ; Opcode: $AA - IND      ,
+                    DEFB    $BA, $FF, $47, $C1, $01     ; Opcode: $BA - INDR     ,
+                    DEFB    $A2, $FF, $48, $C1, $01     ; Opcode: $A2 - INI      ,
+                    DEFB    $B2, $FF, $49, $C1, $01     ; Opcode: $B2 - INIR     ,
+                    DEFB    $E9, $FF, $1E, $15, $01     ; Opcode: $E9 - JP   (HL),
+                    DEFB    $C2, $C7, $1E, $0B, $04     ; Opcode: $C2 - JP   cc  ,nn
+                    DEFB    $C3, $FF, $1E, $04, $01     ; Opcode: $C3 - JP   nn  ,
+                    DEFB    $20, $E7, $1B, $0A, $02     ; Opcode: $20 - JR   c   ,n
+                    DEFB    $18, $FF, $1B, $02, $01     ; Opcode: $18 - JR   n   ,
+                    DEFB    $40, $C0, $4A, $06, $07     ; Opcode: $40 - LD   r   ,r2
+                    DEFB    $02, $FF, $4A, $2A, $23     ; Opcode: $02 - LD   (BC),A
+                    DEFB    $12, $FF, $4A, $2B, $23     ; Opcode: $12 - LD   (DE),A
+                    DEFB    $32, $FF, $4A, $05, $23     ; Opcode: $32 - LD   (nn),A
+                    DEFB    $22, $FF, $4A, $05, $18     ; Opcode: $22 - LD   (nn),HL
+                    DEFB    $43, $CF, $4A, $C5, $08     ; Opcode: $43 - LD   (nn),dd
+                    DEFB    $0A, $FF, $4A, $23, $2A     ; Opcode: $0A - LD   A   ,(BC)
+                    DEFB    $1A, $FF, $4A, $23, $2B     ; Opcode: $1A - LD   A   ,(DE)
+                    DEFB    $3A, $FF, $4A, $23, $05     ; Opcode: $3A - LD   A   ,(nn)
+                    DEFB    $2A, $FF, $4A, $18, $05     ; Opcode: $2A - LD   HL  ,(nn)
+                    DEFB    $F9, $FF, $4A, $2C, $18     ; Opcode: $F9 - LD   SP  ,HL
+                    DEFB    $01, $CF, $4A, $08, $04     ; Opcode: $01 - LD   dd  ,nn
+                    DEFB    $4B, $CF, $4A, $C8, $05     ; Opcode: $4B - LD   dd  ,(nn)
+                    DEFB    $57, $FF, $4A, $E3, $2D     ; Opcode: $57 - LD   A   ,I
+                    DEFB    $5F, $FF, $4A, $E3, $2E     ; Opcode: $5F - LD   A   ,R
+                    DEFB    $47, $FF, $4A, $ED, $23     ; Opcode: $47 - LD   I   ,A
+                    DEFB    $4F, $FF, $4A, $EE, $23     ; Opcode: $4F - LD   R   ,A
+                    DEFB    $06, $C7, $4A, $06, $02     ; Opcode: $06 - LD   r   ,n
+                    DEFB    $A8, $FF, $4B, $C1, $01     ; Opcode: $A8 - LDD      ,
+                    DEFB    $B8, $FF, $4C, $C1, $01     ; Opcode: $B8 - LDDR     ,
+                    DEFB    $A0, $FF, $4D, $C1, $01     ; Opcode: $A0 - LDI      ,
+                    DEFB    $B0, $FF, $4E, $C1, $01     ; Opcode: $B0 - LDIR     ,
+                    DEFB    $44, $FF, $4F, $C1, $01     ; Opcode: $44 - NEG      ,
+                    DEFB    $00, $FF, $50, $01, $01     ; Opcode: $00 - NOP      ,
+                    DEFB    $B0, $F8, $51, $07, $01     ; Opcode: $B0 - OR   r2  ,
+                    DEFB    $F6, $FF, $51, $02, $01     ; Opcode: $F6 - OR   n   ,
+                    DEFB    $BB, $FF, $52, $C1, $01     ; Opcode: $BB - OTDR     ,
+                    DEFB    $B3, $FF, $53, $C1, $01     ; Opcode: $B3 - OTIR     ,
+                    DEFB    $41, $C7, $54, $EF, $06     ; Opcode: $41 - OUT  (C) ,r
+                    DEFB    $D3, $FF, $54, $03, $23     ; Opcode: $D3 - OUT  (n) ,A
+                    DEFB    $AB, $FF, $55, $C1, $01     ; Opcode: $AB - OUTD     ,
+                    DEFB    $A3, $FF, $56, $C1, $01     ; Opcode: $A3 - OUTI     ,
+                    DEFB    $C1, $CF, $57, $09, $01     ; Opcode: $C1 - POP  qq  ,
+                    DEFB    $C5, $CF, $58, $09, $01     ; Opcode: $C5 - PUSH qq  ,
+                    DEFB    $80, $C0, $59, $8D, $07     ; Opcode: $80 - RES  b   ,r2
+                    DEFB    $C9, $FF, $20, $01, $01     ; Opcode: $C9 - RET      ,
+                    DEFB    $C0, $C7, $20, $0B, $01     ; Opcode: $C0 - RET  cc  ,
+                    DEFB    $4D, $FF, $21, $C1, $01     ; Opcode: $4D - RETI     ,
+                    DEFB    $45, $FF, $22, $C1, $01     ; Opcode: $45 - RETN     ,
+                    DEFB    $10, $F8, $5A, $87, $01     ; Opcode: $10 - RL   r2  ,
+                    DEFB    $17, $FF, $5B, $01, $01     ; Opcode: $17 - RLA      ,
+                    DEFB    $00, $F8, $5C, $87, $01     ; Opcode: $00 - RLC  r2  ,
+                    DEFB    $07, $FF, $5D, $01, $01     ; Opcode: $07 - RLCA     ,
+                    DEFB    $6F, $FF, $5E, $C1, $01     ; Opcode: $6F - RLD      ,
+                    DEFB    $18, $F8, $5F, $87, $01     ; Opcode: $18 - RR   r2  ,
+                    DEFB    $1F, $FF, $60, $01, $01     ; Opcode: $1F - RRA      ,
+                    DEFB    $08, $F8, $61, $87, $01     ; Opcode: $08 - RRC  r2  ,
+                    DEFB    $0F, $FF, $62, $01, $01     ; Opcode: $0F - RRCA     ,
+                    DEFB    $67, $FF, $63, $C1, $01     ; Opcode: $67 - RRD      ,
+                    DEFB    $C7, $C7, $1D, $0C, $01     ; Opcode: $C7 - RST  t   ,
+                    DEFB    $98, $F8, $64, $23, $07     ; Opcode: $98 - SBC  A   ,r2
+                    DEFB    $DE, $FF, $64, $23, $02     ; Opcode: $DE - SBC  A   ,n
+                    DEFB    $42, $CF, $64, $D8, $08     ; Opcode: $42 - SBC  HL  ,dd
+                    DEFB    $37, $FF, $65, $01, $01     ; Opcode: $37 - SCF      ,
+                    DEFB    $C0, $C0, $66, $8D, $07     ; Opcode: $C0 - SET  b   ,r2
+                    DEFB    $20, $F8, $67, $87, $01     ; Opcode: $20 - SLA  r2  ,
+                    DEFB    $30, $F8, $68, $87, $01     ; Opcode: $30 - SLL  r2  ,
+                    DEFB    $28, $F8, $69, $87, $01     ; Opcode: $28 - SRA  r2  ,
+                    DEFB    $38, $F8, $6A, $87, $01     ; Opcode: $38 - SRL  r2  ,
+                    DEFB    $90, $F8, $6B, $07, $01     ; Opcode: $90 - SUB  r2  ,
+                    DEFB    $D6, $FF, $6B, $02, $01     ; Opcode: $D6 - SUB  n   ,
+                    DEFB    $A8, $F8, $6C, $07, $01     ; Opcode: $A8 - XOR  r2  ,
+                    DEFB    $EE, $FF, $6C, $02, $01     ; Opcode: $EE - XOR  n   ,
+                    DEFB    $00, $00, $6D, $01, $01     ; Opcode: $00 - ????     ,
+                    DEFB    $00, $00, $6D, $C1, $01     ; Opcode: $00 - ????     ,
+
+; Operand table:
+;   Index into table is the operand string number 1 to 13)
+;   Contents: Substitution string number, function bits BIILMM
+;
+; Op  String  Offset  Bracket  Immediate  Substitue     subsLen  subsMask  ->  BIILMM
+;  1  =""     +0      No       No   (00)  No                n/a  n/a           000000
+;  2  ="n"    +1      No       Byte (10)  No                n/a  n/a           010000
+;  3  ="(n)"  +1      Yes      Byte (10)  No                n/a  n/a           110000
+;  4  ="nn"   +2      No       Word (11)  No                n/a  n/a           011000
+;  5  ="(nn)" +2      Yes      Word (11)  No                n/a  n/a           111000
+;  6  ="r"    +0      No       No   (00)  "BCDEHL-A"          1  0x38 (11)     000011
+;  7  ="r2"   +0      No       No   (00)  "BCDEHL-A"          1  0x07 (00)     000000
+;  8  ="dd"   +0      No       No   (00)  "BCDEHLSP"          2  0x30 (10)     000110
+;  9  ="qq"   +0      No       No   (00)  "BCDEHLAF"          2  0x30 (10)     000110
+; 10  ="c"    +0      No       No   (00)  "NZZ NCC "          2  0x18 (01)     000101
+; 11  ="cc"   +0      No       No   (00)  "NZZ NCC POPEP M "  2  0x38 (11)     000111
+; 12  ="t"    +0      No       No   (00)  "0008101820283038"  2  0x38 (11)     000111
+; 13  ="b"    +0      No       No   (00)  "01234567"          1  0x38 (11)     000011
+; Each table entry is coded with the string number plus a byte containing BIILMM bits
+; Length bit is hi for strings with two character substitutions
+DisOperandTable:
+                    DEFB    $00, $00                    ; 0b000000 ;Operand  1 = ""
+                    DEFB    $00, $10                    ; 0b010000 ;Operand  2 = "n"
+                    DEFB    $00, $30                    ; 0b110000 ;Operand  3 = "(n)"
+                    DEFB    $00, $18                    ; 0b011000 ;Operand  4 = "nn"
+                    DEFB    $00, $38                    ; 0b111000 ;Operand  5 = "(nn)"
+                    DEFB    $0E, $03                    ; 0b000011 ;Operand  6 = "r"
+                    DEFB    $0E, $00                    ; 0b000000 ;Operand  7 = "r2"
+                    DEFB    $0F, $06                    ; 0b000110 ;Operand  8 = "dd"
+                    DEFB    $10, $06                    ; 0b000110 ;Operand  9 = "qq"
+                    DEFB    $11, $05                    ; 0b000101 ;Operand 10 = "c"
+                    DEFB    $12, $07                    ; 0b000111 ;Operand 11 = "cc"
+                    DEFB    $13, $07                    ; 0b000111 ;Operand 12 = "t"
+                    DEFB    $14, $03                    ; 0b000011 ;Operand 13 = "b"
+
+; Mask table
+; These are the masks used to separate token values such as register "BCDEHL-A"
+; The index into the table is coded in the two mask bits from the above table.
+DisMaskTable:
+                    DEFB    $07                         ; Mask type 0
+                    DEFB    $18                         ; Mask type 1
+                    DEFB    $30                         ; Mask type 2
+                    DEFB    $38                         ; Mask type 3
+
+; Strings
+StrMore:            DEFM    "more?"
+StrLabels:
+                    DEFM    "from:"
+                    DEFM    "  to:"
+
+; String buffer and relative reallocation addresses ** MUST be below StrLabels **
+kStrBuffer:
+Realloc_Addrs:
+                    DEFW    Realloc_A-START+1
+                    DEFW    Realloc_B-START+1
+                    DEFW    Realloc_C-START+1
+                    DEFW    Realloc_1-START+1
+                    DEFW    Realloc_2-START+1
+                    DEFW    Realloc_3-START+1
+                    DEFW    Realloc_4-START+1
+                    DEFW    Realloc_5-START+1
+                    DEFW    Realloc_6-START+1
+                    DEFW    Realloc_7-START+1
+                    DEFW    Realloc_8-START+1
+                    DEFW    Realloc_9-START+1
+                    DEFW    Realloc_10-START+1
+                    DEFW    Realloc_11-START+1
+                    DEFW    Realloc_12-START+1
+                    DEFW    Realloc_13-START+1
+                    DEFW    Realloc_14-START+1
+                    DEFW    Realloc_15-START+1
+                    DEFW    Realloc_16-START+1
+                    DEFW    Realloc_17-START+1
+                    DEFW    Realloc_18-START+1
+                    DEFW    Realloc_19-START+1
+                    DEFW    Realloc_20-START+1
+                    DEFW    Realloc_21-START+1
+                    DEFW    Realloc_22-START+1
+                    DEFW    Realloc_23-START+1
+                    DEFW    Realloc_24-START+1
+                    DEFW    Realloc_25-START+1
+                    DEFW    Realloc_26-START+1
+                    DEFW    Realloc_27-START+1
+                    DEFW    Realloc_28-START+1
+                    DEFW    Realloc_29-START+1
+                    DEFW    Realloc_30-START+1
+                    DEFW    Realloc_31-START+1
+                    DEFW    Realloc_32-START+1
+                    DEFW    Realloc_33-START+1
+                    DEFW    Realloc_34-START+2
+                    DEFW    Realloc_35-START+2
+                    DEFW    Realloc_36-START+1
+                    DEFW    Realloc_37-START+1
+                    DEFW    Realloc_38-START+2
+                    DEFW    Realloc_39-START+1
+                    DEFW    Realloc_40-START+1
+                    DEFW    Realloc_41-START+1
+                    DEFW    Realloc_42-START+1
+                    DEFW    Realloc_43-START+1
+                    DEFW    Realloc_44-START+1
+                    DEFW    Realloc_45-START+1
+                    DEFW    Realloc_46-START+1
+                    DEFW    Realloc_47-START+1
+                    DEFW    Realloc_48-START+1
+                    DEFW    Realloc_49-START+1
+                    DEFW    Realloc_50-START+1
+                    DEFW    Realloc_51-START+1
+                    DEFW    Realloc_52-START+1
+                    DEFW    Realloc_53-START+1
+                    DEFW    Realloc_54-START+1
+                    DEFW    Realloc_55-START+1
+                    DEFW    Realloc_56-START+1
+                    DEFW    Realloc_57-START+1
+                    DEFW    $0000

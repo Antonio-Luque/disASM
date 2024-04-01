@@ -1,0 +1,175 @@
+﻿; **********************************************************************************************************************
+; **  Input/Output support                                                                          by Antonio Luque  **
+; **********************************************************************************************************************
+
+
+; ROM routines and system variables
+CLS_LOWER           EQU     $0D6E                       ; Clear the lower part of the display
+CL_ALL              EQU     $0DAF                       ; Clear the whole display area
+CHAN_OPEN           EQU     $1601                       ; Open channel subroutine
+PR_STRING           EQU     $203C                       ; Print string
+LAST_K              EQU     $5C08                       ; Last key pressed
+SPOS_N              EQU     $5C88                       ; Column and line for PRINT position
+SCR_CT              EQU     $5C8C                       ; Scroll counter
+
+; Control characters
+CHR_LEFT            EQU     $08                         ; Move cursor backwards
+CHR_DELETE          EQU     $0C                         ; Delete
+CHR_FLASH           EQU     $12                         ; Flash attribute
+
+
+; IOSupport: Input "from" and "to" addresses from keyboard
+;  On entry: -
+;  On exit: HL = Start of instruction to be disassembled ("from")
+;           BC = End of instrucction to be disassembled ("to"+1)
+;           DE = Start of string buffer
+;           IX IY I AF' preserved
+InputAddresses:
+                    call    CLS_LOWER                   ; Clear the lower part of the display
+
+Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
+                    ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
+Print_Label:
+                    push    bc                          ; Store current number of inputs
+                    ld      bc, 5                       ; Length of string
+                    call    PR_STRING                   ; Print string
+                    push    de                          ; Store next string pointer ("  to")
+                    inc     c                           ; Set C = 0 (current number of nibbles)
+Get_Address:
+                    ld      a, CHR_FLASH                ; Activate flash attribute
+                    rst     $10
+                    ld      a, 1
+                    rst     $10
+                    ld      a, 'L'                      ; Print 'L' cursor
+                    rst     $10
+                    ld      a, CHR_FLASH                ; Deactivate flash attribute
+                    rst     $10
+                    xor     a
+                    rst     $10
+                    res     5, (iy+1)                   ; Set key pressed flag = off
+Wait_Key:
+                    bit     5, (iy+1)                   ; Key pressed?
+                    jr      z, Wait_Key                 ; No, repeat until key pressed
+                    ld      a, CHR_LEFT                 ; Move cursor left
+                    rst     $10
+                    ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+                    cp      CHR_DELETE                  ; Is it Delete?
+                    jr      z, Delete                   ; Yes, perform deleting of previous character
+                    cp      '0'                         ; Is it < '0' ?
+                    jr      c, Get_Address              ; Yes, repeat key input
+                    cp      'g'                         ; Is it >= 'g' ?
+                    jr      nc, Get_Address             ; Yes, repeat key input
+                    cp      ':'                         ; Is it < ':' ?
+                    jr      c, Input_OK                 ; Yes, perform key input
+                    cp      'a'                         ; Is it < 'a' ?
+                    jr      c, Get_Address              ; Yes, repeat key input
+
+; ASCII code is between '0' and '9' or between 'a' and 'f'
+Input_OK:
+                    rst     $10                         ; Print ASCII code
+                    ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
+                    sub     '0'                         ; Convert ASCII to decimal number range
+                    cp      10                          ; Is it in range 0..9 ?
+                    jr      c, High_Nibble              ; Yes, perform high nibble
+                    sub     'a'-'0'-10                  ; No, convert to range A..F
+High_Nibble:
+                    inc     c                           ; Increment current number of nibbles
+                    bit     0, c                        ; Check if number of nibbles is odd or even 
+                    jr      z, Low_Nibble               ; If odd, perform low nibble
+                    add     a, a                        ; Multiply number by 16
+                    add     a, a
+                    add     a, a
+                    add     a, a
+                    ld      b, a                        ; Save high nibble in B
+Low_Nibble:
+                    or      b                           ; Bitwise OR with high nibble (get byte)
+                    ld      b, a                        ; Save byte in B
+                    ld      a, c                        ; Get current number of nibbles
+                    cp      4                           ; Is it 4 ?
+                    jr      z, Next_Address             ; Yes, prepare for next address ("to")
+                    rra                                 ; Is it odd ?
+                    jr      c, Get_Address              ; Yes, continue with next nibble
+                    ld      h, b                        ; Store high byte of address in H
+                    ld      b, 0                        ; Reset high nibble
+                    jr      Get_Address                 ; Continue with next nibble
+; Delete key pressed
+Delete:
+                    ld      a, c                        ; Get current number of nibbles
+                    or      a                           ; Is it = 0 ?
+                    jr      z, Get_Address              ; Yes, nothing to delete
+                    rra                                 ; Is it odd ?
+                    jr      c, Cursor_Left              ; Yes, move cursor left
+                    ld      a, h                        ; If even, recover byte previous byte from H
+                    and     %11110000                   ;  and store high nibble in B
+                    ld      b, a
+Cursor_Left:
+                    dec     c                           ; Decrement number of nibbles
+                    ld      a, ' '                      ; Print space (delete character)
+                    rst     $10
+                    ld      a, CHR_LEFT                 ; Move cursor left two times
+                    rst     $10
+                    ld      a, CHR_LEFT
+                    rst     $10
+                    jr      Get_Address                 ; Continue with next nibble
+; Store "from" address and prepare input of "to" address
+Next_Address:
+                    ld      l, b                        ; Store low byte of address in L
+                    exx                                 ; Store address in HL'
+                    pop     de                          ; Restore next string pointer ("  to")
+                    pop     bc                          ; Restore current number of inputs
+                    djnz    Print_Label                 ; Repeat for each address
+
+; The "from" and "to" addresses are in HL and HL' respectively
+                    exx                                 ; HL = "to" address, HL' = "from" address
+                    push    hl                          ; Store "to" address
+                    call    CL_ALL                      ; Clear display area
+                    exx                                 ; HL = "from" address
+                    pop     bc                          ; Restore "to" address in BC
+                    inc     bc                          ; Increment "to" address
+                    ret
+
+
+; IOSupport: Print fully disassembly from string buffer
+;  On entry: -
+;  On exit: -
+PrintDisassembly:
+                    push    hl                          ; Store pointer to next instruction to be disassembled
+
+                    ld      a, (SPOS_N+1)               ; Get line for PRINT position
+                    ld      e, a                        ; Save it in E
+                    ld      a, (SCR_CT)                 ; Get scroll counter
+                    add     a, e                        ; Sum both
+                    cp      3                           ; Is it = 3 (reach last line) ?
+                    jr      nz, Print                   ; No, print buffer
+
+                    ld      a, 1                        ; Open channel #1 (last two lines)
+                    call    CHAN_OPEN
+Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
+                    ld      bc, 5                       ; BC = length of string
+                    call    PR_STRING                   ; Print string
+                    res     5, (iy+1)                   ; Set key pressed flag = off
+Wait_More:
+                    bit     5, (iy+1)                   ; Key pressed?
+                    jr      z, Wait_More                ; No, repeat until key pressed
+                    ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+                    cp      ' '                         ; Is it space?
+                    jr      z, Break                    ; Yes, return to BASIC
+                    cp      'n'                         ; Is it = 'n' ?
+                    jr      z, Stop                     ; Yes, return to BASIC
+                    call    CL_ALL                      ; Clear display area
+Print:
+Realloc_6           ld      de, kStrBuffer-START+42     ; DE points to string buffer
+                    ld      a, (de)                     ; Get string length
+                    inc     de                          ; Move DE to first character of the string
+                    ld      b, 0                        ; BC = length of the string
+                    ld      c, a
+                    call    PR_STRING                   ; Print string
+
+                    pop     hl                          ; Restore pointer to next instruction to be disassembled
+                    ret
+Stop:
+                    rst     $08                         ; return to BASIC, "9 STOP statement, "
+                    DEFB    $08
+Break:
+                    rst     $08                         ; return to BASIC "L BREAK into program, "
+                    DEFB    $14

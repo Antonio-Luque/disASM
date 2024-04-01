@@ -1,0 +1,51 @@
+﻿; **********************************************************************************************************************
+; **  disASM                                                                                                          **
+; **                                                                                                                  **
+; **  Based on Small Computer Monitor (SCM)                                                     by Stephen C Cousins  **
+; **  https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/                            **
+; **                                                                                                                  **
+; **  Adapted for ZX Spectrum                                                                       by Antonio Luque  **
+; **********************************************************************************************************************
+
+
+START               ORG     $E100
+
+Main:
+                    ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
+                    add     hl, bc                      ; Move HL to absolute address of reallocation addresses
+
+                    #include "Reallocation.z80asm"      ; Realloc. pointers and calls pointed to by the 'Realloc_X' tags
+
+; Re-entry of program after first execution
+Init:
+                    ld      hl, Init-START              ; HL points to relative address of Init address
+                    add     hl, bc                      ; Move HL to "real" address of Init addresses
+                    ld      sp, hl                      ; Move stack to Init
+
+Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
+
+DisInstruction:
+                    push    bc                          ; Store "to"+1 address
+                    push    de                          ; Store string buffer address
+
+Realloc_2           call    DisWrInstruction-START      ; Write fully disassembly instruction in buffer
+Realloc_3           call    PrintDisassembly-START      ; Print buffer
+
+                    pop     de                          ; Restore string buffer address
+                    pop     bc                          ; Restore "to"+1 address
+
+                    and     a                           ; reset carry flag
+                    sbc     hl, bc                      ; check if reach "to"+1 address
+                    add     hl, bc
+                    jr      c, DisInstruction           ; loop until reach "to"+1 address
+
+                    rst     $08                         ; return to BASIC, "0 OK, "
+                    DEFB    $FF
+
+
+; Support routines and data
+                    #include "IOSupport.z80asm"
+                    #include "Strings.z80asm"
+                    #include "DisSupport.z80asm"
+                    #include "Utilities.z80asm"
+                    #include "DisData.z80asm"

@@ -1,0 +1,24 @@
+; **********************************************************************************************************************
+; **  Utility functions                                                                         by Stephen C Cousins  **
+; **********************************************************************************************************************
+
+
+; Utility: Find start of specified string in bit 7 delimited list
+;   On entry: A = String number
+;             HL = Start of string list
+;   On exit:  HL = Start of string
+;             AF BC DE IX IY I AF' BC' DE' HL' preserved
+; Find string A in bit 7 delimited string list
+FindStringInList:
+                    push    bc
+
+Realloc_57          ld      hl, DisString-START-1       ; Start of string list
+                    ld      b, a                        ; Get string number
+NextChar:
+                    inc     hl                          ; Point to next character
+                    bit     7, (hl)                     ; Start of new string?
+                    jr      z, NextChar                 ; No, so go get next character
+                    djnz    NextChar                    ; Loop back if not the right string
+
+                    pop     bc
+                    ret
