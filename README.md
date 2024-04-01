@@ -1,15 +1,13 @@
 # disASM
 ![Screenshot](https://github.com/Antonio-Luque/disASM/blob/main/disASM.png)
 
-A Disassembler for ZX Spectrum.
-
-Based on Small Computer Monitor ([SCM](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/ )) by Stephen C Cousins
+A Disassembler for ZX Spectrum. Based on Small Computer Monitor ([SCM](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/ )) by Stephen C Cousins
 
 Features:
 - Can be loaded into any RAM address (below the System Variables).
 - Use an internal stack.
 - Recognizes undocumented opcodes related to IXH, IXL, IYH and IYL registers.
-- Need only 2 Kbytes.
+- Need only 2 Kbytes of RAM.
 
 Usage:
 - LOAD ""CODE [address] (default: 57600)
