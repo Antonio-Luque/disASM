@@ -4,7 +4,7 @@
 A Disassembler for ZX Spectrum. Based on Small Computer Monitor ([SCM](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/ )) by Stephen C Cousins.
 
 ### Features:
-- Can be loaded into any RAM address (below the System Variables).
+- Can be loaded at any RAM address (below the System Variables).
 - Use an internal stack.
 - Recognizes undocumented opcodes related to IXH, IXL, IYH and IYL registers.
 - Need only 2 Kbytes of RAM.
