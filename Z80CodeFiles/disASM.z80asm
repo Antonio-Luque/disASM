@@ -1,10 +1,10 @@
 ﻿; **********************************************************************************************************************
 ; **  disASM                                                                                                          **
 ; **                                                                                                                  **
-; **  Based on Small Computer Monitor (SCM)                                                     by Stephen C Cousins  **
+; **  Based on Disassembler support from Small Computer Monitor (SCM)                           by Stephen C Cousins  **
 ; **  https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/                            **
 ; **                                                                                                                  **
-; **  Adapted for ZX Spectrum                                                                       by Antonio Luque  **
+; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
 ; **********************************************************************************************************************
 
 

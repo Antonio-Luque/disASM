@@ -24,6 +24,7 @@ CHR_FLASH           EQU     $12                         ; Flash attribute
 ;           BC = End of instrucction to be disassembled ("to"+1)
 ;           DE = Start of string buffer
 ;           IX IY I AF' preserved
+; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
 InputAddresses:
                     call    CLS_LOWER                   ; Clear the lower part of the display
 

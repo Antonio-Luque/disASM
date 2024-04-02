@@ -4,10 +4,10 @@
 8000             0 1 ; **********************************************************************************************************************
 8000             0 2 ; **  disASM                                                                                                          **
 8000             0 3 ; **                                                                                                                  **
-8000             0 4 ; **  Based on Small Computer Monitor (SCM)                                                     by Stephen C Cousins  **
+8000             0 4 ; **  Based on Disassembler support from Small Computer Monitor (SCM)                           by Stephen C Cousins  **
 8000             0 5 ; **  https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/                            **
 8000             0 6 ; **                                                                                                                  **
-8000             0 7 ; **  Adapted for ZX Spectrum                                                                       by Antonio Luque  **
+8000             0 7 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
 8000             0 8 ; **********************************************************************************************************************
 8000             0 11 START               ORG     $E100
 E100             0 13 Main:
@@ -19,7 +19,7 @@ E103 09          0 15 add     hl, bc                      ; Move HL to absolute 
 E104             1 1 ; **********************************************************************************************************************
 E104             1 2 ; **  Reallocation                                                                        by HiSoft Devpac, (C) 1983  **
 E104             1 3 ; **                                                                                                                  **
-E104             1 4 ; **  This piece of code has been disassembled from MONS v4.1 and adapted by Antonio Luque                            **
+E104             1 4 ; **  This piece of code has been disassembled from MONS v4.1 and adapted for disASM by Antonio Luque                 **
 E104             1 5 ; **********************************************************************************************************************
 E104             1 8 ; Reallocation: Reallocate pointers and calls pointed to by the 'Realloc_X' tags
 E104             1 9 ;   On entry: HL = address of reallocation addresses (Realloc_Addrs)
@@ -109,154 +109,155 @@ E152             2 23 ;  On exit: HL = Start of instruction to be disassembled (
 E152             2 24 ;           BC = End of instrucction to be disassembled ("to"+1)
 E152             2 25 ;           DE = Start of string buffer
 E152             2 26 ;           IX IY I AF' preserved
-E152             2 27 InputAddresses:
-E152 CD 6E 0D    2 28 call    CLS_LOWER                   ; Clear the lower part of the display
-E155 11 6F 07    2 30 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
-E158 06 02       2 31 ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
-E15A             2 32 Print_Label:
-E15A C5          2 33 push    bc                          ; Store current number of inputs
-E15B 01 05 00    2 34 ld      bc, 5                       ; Length of string
-E15E CD 3C 20    2 35 call    PR_STRING                   ; Print string
-E161 D5          2 36 push    de                          ; Store next string pointer ("  to")
-E162 0C          2 37 inc     c                           ; Set C = 0 (current number of nibbles)
-E163             2 38 Get_Address:
-E163 3E 12       2 39 ld      a, CHR_FLASH                ; Activate flash attribute
-E165 D7          2 40 rst     $10
-E166 3E 01       2 41 ld      a, 1
-E168 D7          2 42 rst     $10
-E169 3E 4C       2 43 ld      a, 'L'                      ; Print 'L' cursor
-E16B D7          2 44 rst     $10
-E16C 3E 12       2 45 ld      a, CHR_FLASH                ; Deactivate flash attribute
-E16E D7          2 46 rst     $10
-E16F AF          2 47 xor     a
-E170 D7          2 48 rst     $10
-E171 FD CB 01 AE 2 49 res     5, (iy+1)                   ; Set key pressed flag = off
-E175             2 50 Wait_Key:
-E175 FD CB 01 6E 2 51 bit     5, (iy+1)                   ; Key pressed?
-E179 28 FA       2 52 jr      z, Wait_Key                 ; No, repeat until key pressed
-E17B 3E 08       2 53 ld      a, CHR_LEFT                 ; Move cursor left
-E17D D7          2 54 rst     $10
-E17E 3A 08 5C    2 55 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
-E181 FE 0C       2 56 cp      CHR_DELETE                  ; Is it Delete?
-E183 28 35       2 57 jr      z, Delete                   ; Yes, perform deleting of previous character
-E185 FE 30       2 58 cp      '0'                         ; Is it < '0' ?
-E187 38 DA       2 59 jr      c, Get_Address              ; Yes, repeat key input
-E189 FE 67       2 60 cp      'g'                         ; Is it >= 'g' ?
-E18B 30 D6       2 61 jr      nc, Get_Address             ; Yes, repeat key input
-E18D FE 3A       2 62 cp      ':'                         ; Is it < ':' ?
-E18F 38 04       2 63 jr      c, Input_OK                 ; Yes, perform key input
-E191 FE 61       2 64 cp      'a'                         ; Is it < 'a' ?
-E193 38 CE       2 65 jr      c, Get_Address              ; Yes, repeat key input
-E195             2 67 ; ASCII code is between '0' and '9' or between 'a' and 'f'
-E195             2 68 Input_OK:
-E195 D7          2 69 rst     $10                         ; Print ASCII code
-E196 3A 08 5C    2 70 ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
-E199 D6 30       2 71 sub     '0'                         ; Convert ASCII to decimal number range
-E19B FE 0A       2 72 cp      10                          ; Is it in range 0..9 ?
-E19D 38 02       2 73 jr      c, High_Nibble              ; Yes, perform high nibble
-E19F D6 27       2 74 sub     'a'-'0'-10                  ; No, convert to range A..F
-E1A1             2 75 High_Nibble:
-E1A1 0C          2 76 inc     c                           ; Increment current number of nibbles
-E1A2 CB 41       2 77 bit     0, c                        ; Check if number of nibbles is odd or even 
-E1A4 28 05       2 78 jr      z, Low_Nibble               ; If odd, perform low nibble
-E1A6 87          2 79 add     a, a                        ; Multiply number by 16
-E1A7 87          2 80 add     a, a
-E1A8 87          2 81 add     a, a
-E1A9 87          2 82 add     a, a
-E1AA 47          2 83 ld      b, a                        ; Save high nibble in B
-E1AB             2 84 Low_Nibble:
-E1AB B0          2 85 or      b                           ; Bitwise OR with high nibble (get byte)
-E1AC 47          2 86 ld      b, a                        ; Save byte in B
-E1AD 79          2 87 ld      a, c                        ; Get current number of nibbles
-E1AE FE 04       2 88 cp      4                           ; Is it 4 ?
-E1B0 28 1F       2 89 jr      z, Next_Address             ; Yes, prepare for next address ("to")
-E1B2 1F          2 90 rra                                 ; Is it odd ?
-E1B3 38 AE       2 91 jr      c, Get_Address              ; Yes, continue with next nibble
-E1B5 60          2 92 ld      h, b                        ; Store high byte of address in H
-E1B6 06 00       2 93 ld      b, 0                        ; Reset high nibble
-E1B8 18 A9       2 94 jr      Get_Address                 ; Continue with next nibble
-E1BA             2 95 ; Delete key pressed
-E1BA             2 96 Delete:
-E1BA 79          2 97 ld      a, c                        ; Get current number of nibbles
-E1BB B7          2 98 or      a                           ; Is it = 0 ?
-E1BC 28 A5       2 99 jr      z, Get_Address              ; Yes, nothing to delete
-E1BE 1F          2 100 rra                                 ; Is it odd ?
-E1BF 38 04       2 101 jr      c, Cursor_Left              ; Yes, move cursor left
-E1C1 7C          2 102 ld      a, h                        ; If even, recover byte previous byte from H
-E1C2 E6 F0       2 103 and     %11110000                   ;  and store high nibble in B
-E1C4 47          2 104 ld      b, a
-E1C5             2 105 Cursor_Left:
-E1C5 0D          2 106 dec     c                           ; Decrement number of nibbles
-E1C6 3E 20       2 107 ld      a, ' '                      ; Print space (delete character)
-E1C8 D7          2 108 rst     $10
-E1C9 3E 08       2 109 ld      a, CHR_LEFT                 ; Move cursor left two times
-E1CB D7          2 110 rst     $10
-E1CC 3E 08       2 111 ld      a, CHR_LEFT
-E1CE D7          2 112 rst     $10
-E1CF 18 92       2 113 jr      Get_Address                 ; Continue with next nibble
-E1D1             2 114 ; Store "from" address and prepare input of "to" address
-E1D1             2 115 Next_Address:
-E1D1 68          2 116 ld      l, b                        ; Store low byte of address in L
-E1D2 D9          2 117 exx                                 ; Store address in HL'
-E1D3 D1          2 118 pop     de                          ; Restore next string pointer ("  to")
-E1D4 C1          2 119 pop     bc                          ; Restore current number of inputs
-E1D5 10 83       2 120 djnz    Print_Label                 ; Repeat for each address
-E1D7             2 122 ; The "from" and "to" addresses are in HL and HL' respectively
-E1D7 D9          2 123 exx                                 ; HL = "to" address, HL' = "from" address
-E1D8 E5          2 124 push    hl                          ; Store "to" address
-E1D9 CD AF 0D    2 125 call    CL_ALL                      ; Clear display area
-E1DC D9          2 126 exx                                 ; HL = "from" address
-E1DD C1          2 127 pop     bc                          ; Restore "to" address in BC
-E1DE 03          2 128 inc     bc                          ; Increment "to" address
-E1DF C9          2 129 ret
-E1E0             2 132 ; IOSupport: Print fully disassembly from string buffer
-E1E0             2 133 ;  On entry: -
-E1E0             2 134 ;  On exit: -
-E1E0             2 135 PrintDisassembly:
-E1E0 E5          2 136 push    hl                          ; Store pointer to next instruction to be disassembled
-E1E1 3A 89 5C    2 138 ld      a, (SPOS_N+1)               ; Get line for PRINT position
-E1E4 5F          2 139 ld      e, a                        ; Save it in E
-E1E5 3A 8C 5C    2 140 ld      a, (SCR_CT)                 ; Get scroll counter
-E1E8 83          2 141 add     a, e                        ; Sum both
-E1E9 FE 03       2 142 cp      3                           ; Is it = 3 (reach last line) ?
-E1EB 20 26       2 143 jr      nz, Print                   ; No, print buffer
-E1ED 3E 01       2 145 ld      a, 1                        ; Open channel #1 (last two lines)
-E1EF CD 01 16    2 146 call    CHAN_OPEN
-E1F2 11 6A 07    2 147 Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
-E1F5 01 05 00    2 148 ld      bc, 5                       ; BC = length of string
-E1F8 CD 3C 20    2 149 call    PR_STRING                   ; Print string
-E1FB FD CB 01 AE 2 150 res     5, (iy+1)                   ; Set key pressed flag = off
-E1FF             2 151 Wait_More:
-E1FF FD CB 01 6E 2 152 bit     5, (iy+1)                   ; Key pressed?
-E203 28 FA       2 153 jr      z, Wait_More                ; No, repeat until key pressed
-E205 3A 08 5C    2 154 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
-E208 FE 20       2 155 cp      ' '                         ; Is it space?
-E20A 28 16       2 156 jr      z, Break                    ; Yes, return to BASIC
-E20C FE 6E       2 157 cp      'n'                         ; Is it = 'n' ?
-E20E 28 10       2 158 jr      z, Stop                     ; Yes, return to BASIC
-E210 CD AF 0D    2 159 call    CL_ALL                      ; Clear display area
-E213             2 160 Print:
-E213 11 A3 07    2 161 Realloc_6           ld      de, kStrBuffer-START+42     ; DE points to string buffer
-E216 1A          2 162 ld      a, (de)                     ; Get string length
-E217 13          2 163 inc     de                          ; Move DE to first character of the string
-E218 06 00       2 164 ld      b, 0                        ; BC = length of the string
-E21A 4F          2 165 ld      c, a
-E21B CD 3C 20    2 166 call    PR_STRING                   ; Print string
-E21E E1          2 168 pop     hl                          ; Restore pointer to next instruction to be disassembled
-E21F C9          2 169 ret
-E220             2 170 Stop:
-E220 CF          2 171 rst     $08                         ; return to BASIC, "9 STOP statement, "
-E221 08          2 172 DEFB    $08
-E222             2 173 Break:
-E222 CF          2 174 rst     $08                         ; return to BASIC "L BREAK into program, "
-E223 14          2 175 DEFB    $14
+E152             2 27 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
+E152             2 28 InputAddresses:
+E152 CD 6E 0D    2 29 call    CLS_LOWER                   ; Clear the lower part of the display
+E155 11 6F 07    2 31 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
+E158 06 02       2 32 ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
+E15A             2 33 Print_Label:
+E15A C5          2 34 push    bc                          ; Store current number of inputs
+E15B 01 05 00    2 35 ld      bc, 5                       ; Length of string
+E15E CD 3C 20    2 36 call    PR_STRING                   ; Print string
+E161 D5          2 37 push    de                          ; Store next string pointer ("  to")
+E162 0C          2 38 inc     c                           ; Set C = 0 (current number of nibbles)
+E163             2 39 Get_Address:
+E163 3E 12       2 40 ld      a, CHR_FLASH                ; Activate flash attribute
+E165 D7          2 41 rst     $10
+E166 3E 01       2 42 ld      a, 1
+E168 D7          2 43 rst     $10
+E169 3E 4C       2 44 ld      a, 'L'                      ; Print 'L' cursor
+E16B D7          2 45 rst     $10
+E16C 3E 12       2 46 ld      a, CHR_FLASH                ; Deactivate flash attribute
+E16E D7          2 47 rst     $10
+E16F AF          2 48 xor     a
+E170 D7          2 49 rst     $10
+E171 FD CB 01 AE 2 50 res     5, (iy+1)                   ; Set key pressed flag = off
+E175             2 51 Wait_Key:
+E175 FD CB 01 6E 2 52 bit     5, (iy+1)                   ; Key pressed?
+E179 28 FA       2 53 jr      z, Wait_Key                 ; No, repeat until key pressed
+E17B 3E 08       2 54 ld      a, CHR_LEFT                 ; Move cursor left
+E17D D7          2 55 rst     $10
+E17E 3A 08 5C    2 56 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+E181 FE 0C       2 57 cp      CHR_DELETE                  ; Is it Delete?
+E183 28 35       2 58 jr      z, Delete                   ; Yes, perform deleting of previous character
+E185 FE 30       2 59 cp      '0'                         ; Is it < '0' ?
+E187 38 DA       2 60 jr      c, Get_Address              ; Yes, repeat key input
+E189 FE 67       2 61 cp      'g'                         ; Is it >= 'g' ?
+E18B 30 D6       2 62 jr      nc, Get_Address             ; Yes, repeat key input
+E18D FE 3A       2 63 cp      ':'                         ; Is it < ':' ?
+E18F 38 04       2 64 jr      c, Input_OK                 ; Yes, perform key input
+E191 FE 61       2 65 cp      'a'                         ; Is it < 'a' ?
+E193 38 CE       2 66 jr      c, Get_Address              ; Yes, repeat key input
+E195             2 68 ; ASCII code is between '0' and '9' or between 'a' and 'f'
+E195             2 69 Input_OK:
+E195 D7          2 70 rst     $10                         ; Print ASCII code
+E196 3A 08 5C    2 71 ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
+E199 D6 30       2 72 sub     '0'                         ; Convert ASCII to decimal number range
+E19B FE 0A       2 73 cp      10                          ; Is it in range 0..9 ?
+E19D 38 02       2 74 jr      c, High_Nibble              ; Yes, perform high nibble
+E19F D6 27       2 75 sub     'a'-'0'-10                  ; No, convert to range A..F
+E1A1             2 76 High_Nibble:
+E1A1 0C          2 77 inc     c                           ; Increment current number of nibbles
+E1A2 CB 41       2 78 bit     0, c                        ; Check if number of nibbles is odd or even 
+E1A4 28 05       2 79 jr      z, Low_Nibble               ; If odd, perform low nibble
+E1A6 87          2 80 add     a, a                        ; Multiply number by 16
+E1A7 87          2 81 add     a, a
+E1A8 87          2 82 add     a, a
+E1A9 87          2 83 add     a, a
+E1AA 47          2 84 ld      b, a                        ; Save high nibble in B
+E1AB             2 85 Low_Nibble:
+E1AB B0          2 86 or      b                           ; Bitwise OR with high nibble (get byte)
+E1AC 47          2 87 ld      b, a                        ; Save byte in B
+E1AD 79          2 88 ld      a, c                        ; Get current number of nibbles
+E1AE FE 04       2 89 cp      4                           ; Is it 4 ?
+E1B0 28 1F       2 90 jr      z, Next_Address             ; Yes, prepare for next address ("to")
+E1B2 1F          2 91 rra                                 ; Is it odd ?
+E1B3 38 AE       2 92 jr      c, Get_Address              ; Yes, continue with next nibble
+E1B5 60          2 93 ld      h, b                        ; Store high byte of address in H
+E1B6 06 00       2 94 ld      b, 0                        ; Reset high nibble
+E1B8 18 A9       2 95 jr      Get_Address                 ; Continue with next nibble
+E1BA             2 96 ; Delete key pressed
+E1BA             2 97 Delete:
+E1BA 79          2 98 ld      a, c                        ; Get current number of nibbles
+E1BB B7          2 99 or      a                           ; Is it = 0 ?
+E1BC 28 A5       2 100 jr      z, Get_Address              ; Yes, nothing to delete
+E1BE 1F          2 101 rra                                 ; Is it odd ?
+E1BF 38 04       2 102 jr      c, Cursor_Left              ; Yes, move cursor left
+E1C1 7C          2 103 ld      a, h                        ; If even, recover byte previous byte from H
+E1C2 E6 F0       2 104 and     %11110000                   ;  and store high nibble in B
+E1C4 47          2 105 ld      b, a
+E1C5             2 106 Cursor_Left:
+E1C5 0D          2 107 dec     c                           ; Decrement number of nibbles
+E1C6 3E 20       2 108 ld      a, ' '                      ; Print space (delete character)
+E1C8 D7          2 109 rst     $10
+E1C9 3E 08       2 110 ld      a, CHR_LEFT                 ; Move cursor left two times
+E1CB D7          2 111 rst     $10
+E1CC 3E 08       2 112 ld      a, CHR_LEFT
+E1CE D7          2 113 rst     $10
+E1CF 18 92       2 114 jr      Get_Address                 ; Continue with next nibble
+E1D1             2 115 ; Store "from" address and prepare input of "to" address
+E1D1             2 116 Next_Address:
+E1D1 68          2 117 ld      l, b                        ; Store low byte of address in L
+E1D2 D9          2 118 exx                                 ; Store address in HL'
+E1D3 D1          2 119 pop     de                          ; Restore next string pointer ("  to")
+E1D4 C1          2 120 pop     bc                          ; Restore current number of inputs
+E1D5 10 83       2 121 djnz    Print_Label                 ; Repeat for each address
+E1D7             2 123 ; The "from" and "to" addresses are in HL and HL' respectively
+E1D7 D9          2 124 exx                                 ; HL = "to" address, HL' = "from" address
+E1D8 E5          2 125 push    hl                          ; Store "to" address
+E1D9 CD AF 0D    2 126 call    CL_ALL                      ; Clear display area
+E1DC D9          2 127 exx                                 ; HL = "from" address
+E1DD C1          2 128 pop     bc                          ; Restore "to" address in BC
+E1DE 03          2 129 inc     bc                          ; Increment "to" address
+E1DF C9          2 130 ret
+E1E0             2 133 ; IOSupport: Print fully disassembly from string buffer
+E1E0             2 134 ;  On entry: -
+E1E0             2 135 ;  On exit: -
+E1E0             2 136 PrintDisassembly:
+E1E0 E5          2 137 push    hl                          ; Store pointer to next instruction to be disassembled
+E1E1 3A 89 5C    2 139 ld      a, (SPOS_N+1)               ; Get line for PRINT position
+E1E4 5F          2 140 ld      e, a                        ; Save it in E
+E1E5 3A 8C 5C    2 141 ld      a, (SCR_CT)                 ; Get scroll counter
+E1E8 83          2 142 add     a, e                        ; Sum both
+E1E9 FE 03       2 143 cp      3                           ; Is it = 3 (reach last line) ?
+E1EB 20 26       2 144 jr      nz, Print                   ; No, print buffer
+E1ED 3E 01       2 146 ld      a, 1                        ; Open channel #1 (last two lines)
+E1EF CD 01 16    2 147 call    CHAN_OPEN
+E1F2 11 6A 07    2 148 Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
+E1F5 01 05 00    2 149 ld      bc, 5                       ; BC = length of string
+E1F8 CD 3C 20    2 150 call    PR_STRING                   ; Print string
+E1FB FD CB 01 AE 2 151 res     5, (iy+1)                   ; Set key pressed flag = off
+E1FF             2 152 Wait_More:
+E1FF FD CB 01 6E 2 153 bit     5, (iy+1)                   ; Key pressed?
+E203 28 FA       2 154 jr      z, Wait_More                ; No, repeat until key pressed
+E205 3A 08 5C    2 155 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+E208 FE 20       2 156 cp      ' '                         ; Is it space?
+E20A 28 16       2 157 jr      z, Break                    ; Yes, return to BASIC
+E20C FE 6E       2 158 cp      'n'                         ; Is it = 'n' ?
+E20E 28 10       2 159 jr      z, Stop                     ; Yes, return to BASIC
+E210 CD AF 0D    2 160 call    CL_ALL                      ; Clear display area
+E213             2 161 Print:
+E213 11 A3 07    2 162 Realloc_6           ld      de, kStrBuffer-START+42     ; DE points to string buffer
+E216 1A          2 163 ld      a, (de)                     ; Get string length
+E217 13          2 164 inc     de                          ; Move DE to first character of the string
+E218 06 00       2 165 ld      b, 0                        ; BC = length of the string
+E21A 4F          2 166 ld      c, a
+E21B CD 3C 20    2 167 call    PR_STRING                   ; Print string
+E21E E1          2 169 pop     hl                          ; Restore pointer to next instruction to be disassembled
+E21F C9          2 170 ret
+E220             2 171 Stop:
+E220 CF          2 172 rst     $08                         ; return to BASIC, "9 STOP statement, "
+E221 08          2 173 DEFB    $08
+E222             2 174 Break:
+E222 CF          2 175 rst     $08                         ; return to BASIC "L BREAK into program, "
+E223 14          2 176 DEFB    $14
 
 ; File #3: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\Strings.z80asm
 
 E224             3 1 ; **********************************************************************************************************************
 E224             3 2 ; **  String support                                                                            by Stephen C Cousins  **
 E224             3 3 ; **                                                                                                                  **
-E224             3 4 ; **  Adapted for ZX Spectrum                                                                       by Antonio Luque  **
+E224             3 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
 E224             3 5 ; **********************************************************************************************************************
 E224             3 8 ; String: Write address, colon, space to string buffer
 E224             3 9 ;   On entry: DE = Address
@@ -334,7 +335,7 @@ E265 C9          3 81 ret
 E266             4 1 ; **********************************************************************************************************************
 E266             4 2 ; **  Disassembler support                                                                      by Stephen C Cousins  **
 E266             4 3 ; **                                                                                                                  **
-E266             4 4 ; **  Adapted for ZX Spectrum                                                                       by Antonio Luque  **
+E266             4 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
 E266             4 5 ; **********************************************************************************************************************
 E266             4 8 kDisBrack:          EQU     5                           ; Bracket flag
 E266             4 9 kDisImmed:          EQU     4                           ; Immediate value flag
@@ -1338,75 +1339,78 @@ E866 07          6 392 DEFB    $07                         ; Mask type 0
 E867 18          6 393 DEFB    $18                         ; Mask type 1
 E868 30          6 394 DEFB    $30                         ; Mask type 2
 E869 38          6 395 DEFB    $38                         ; Mask type 3
-E86A             6 397 ; Strings
-E86A 6D 6F 72 65 6 398 StrMore:            DEFM    "more?"
-E86E 3F          6 398 
-E86F             6 399 StrLabels:
-E86F 66 72 6F 6D 6 400 DEFM    "from:"
-E873 3A          6 400 
-E874 20 20 74 6F 6 401 DEFM    "  to:"
-E878 3A          6 401 
-E879             6 403 ; String buffer and relative reallocation addresses ** MUST be below StrLabels **
-E879             6 404 kStrBuffer:
-E879             6 405 Realloc_Addrs:
-E879 30 00       6 406 DEFW    Realloc_A-START+1
-E87B 33 00       6 407 DEFW    Realloc_B-START+1
-E87D 36 00       6 408 DEFW    Realloc_C-START+1
-E87F 3E 00       6 409 DEFW    Realloc_1-START+1
-E881 43 00       6 410 DEFW    Realloc_2-START+1
-E883 46 00       6 411 DEFW    Realloc_3-START+1
-E885 56 00       6 412 DEFW    Realloc_4-START+1
-E887 F3 00       6 413 DEFW    Realloc_5-START+1
-E889 14 01       6 414 DEFW    Realloc_6-START+1
-E88B 25 01       6 415 DEFW    Realloc_7-START+1
-E88D 2A 01       6 416 DEFW    Realloc_8-START+1
-E88F 32 01       6 417 DEFW    Realloc_9-START+1
-E891 44 01       6 418 DEFW    Realloc_10-START+1
-E893 48 01       6 419 DEFW    Realloc_11-START+1
-E895 8D 01       6 420 DEFW    Realloc_12-START+1
-E897 97 01       6 421 DEFW    Realloc_13-START+1
-E899 A4 01       6 422 DEFW    Realloc_14-START+1
-E89B BA 01       6 423 DEFW    Realloc_15-START+1
-E89D BF 01       6 424 DEFW    Realloc_16-START+1
-E89F C3 01       6 425 DEFW    Realloc_17-START+1
-E8A1 C8 01       6 426 DEFW    Realloc_18-START+1
-E8A3 DB 01       6 427 DEFW    Realloc_19-START+1
-E8A5 EE 01       6 428 DEFW    Realloc_20-START+1
-E8A7 F7 01       6 429 DEFW    Realloc_21-START+1
-E8A9 FC 01       6 430 DEFW    Realloc_22-START+1
-E8AB FF 01       6 431 DEFW    Realloc_23-START+1
-E8AD 09 02       6 432 DEFW    Realloc_24-START+1
-E8AF 0C 02       6 433 DEFW    Realloc_25-START+1
-E8B1 10 02       6 434 DEFW    Realloc_26-START+1
-E8B3 19 02       6 435 DEFW    Realloc_27-START+1
-E8B5 24 02       6 436 DEFW    Realloc_28-START+1
-E8B7 3F 02       6 437 DEFW    Realloc_29-START+1
-E8B9 42 02       6 438 DEFW    Realloc_30-START+1
-E8BB 73 02       6 439 DEFW    Realloc_31-START+1
-E8BD 79 02       6 440 DEFW    Realloc_32-START+1
-E8BF 84 02       6 441 DEFW    Realloc_33-START+1
-E8C1 8C 02       6 442 DEFW    Realloc_34-START+2
-E8C3 90 02       6 443 DEFW    Realloc_35-START+2
-E8C5 95 02       6 444 DEFW    Realloc_36-START+1
-E8C7 99 02       6 445 DEFW    Realloc_37-START+1
-E8C9 9D 02       6 446 DEFW    Realloc_38-START+2
-E8CB A5 02       6 447 DEFW    Realloc_39-START+1
-E8CD A9 02       6 448 DEFW    Realloc_40-START+1
-E8CF B3 02       6 449 DEFW    Realloc_41-START+1
-E8D1 BE 02       6 450 DEFW    Realloc_42-START+1
-E8D3 C3 02       6 451 DEFW    Realloc_43-START+1
-E8D5 D7 02       6 452 DEFW    Realloc_44-START+1
-E8D7 E2 02       6 453 DEFW    Realloc_45-START+1
-E8D9 08 03       6 454 DEFW    Realloc_46-START+1
-E8DB 0C 03       6 455 DEFW    Realloc_47-START+1
-E8DD 3D 03       6 456 DEFW    Realloc_48-START+1
-E8DF 41 03       6 457 DEFW    Realloc_49-START+1
-E8E1 46 03       6 458 DEFW    Realloc_50-START+1
-E8E3 4D 03       6 459 DEFW    Realloc_51-START+1
-E8E5 58 03       6 460 DEFW    Realloc_52-START+1
-E8E7 5F 03       6 461 DEFW    Realloc_53-START+1
-E8E9 6B 03       6 462 DEFW    Realloc_54-START+1
-E8EB 85 03       6 463 DEFW    Realloc_55-START+1
-E8ED 88 03       6 464 DEFW    Realloc_56-START+1
-E8EF A1 03       6 465 DEFW    Realloc_57-START+1
-E8F1 00 00       6 466 DEFW    $0000
+E86A             6 398 ; **********************************************************************************************************************
+E86A             6 399 ; **  Added by Antonio Luque for ZX Spectrum disASM                                                                   **
+E86A             6 400 ; **********************************************************************************************************************
+E86A             6 402 ; Strings
+E86A 6D 6F 72 65 6 403 StrMore:            DEFM    "more?"
+E86E 3F          6 403 
+E86F             6 404 StrLabels:
+E86F 66 72 6F 6D 6 405 DEFM    "from:"
+E873 3A          6 405 
+E874 20 20 74 6F 6 406 DEFM    "  to:"
+E878 3A          6 406 
+E879             6 408 ; String buffer and relative reallocation addresses ** MUST be below StrLabels **
+E879             6 409 kStrBuffer:
+E879             6 410 Realloc_Addrs:
+E879 30 00       6 411 DEFW    Realloc_A-START+1
+E87B 33 00       6 412 DEFW    Realloc_B-START+1
+E87D 36 00       6 413 DEFW    Realloc_C-START+1
+E87F 3E 00       6 414 DEFW    Realloc_1-START+1
+E881 43 00       6 415 DEFW    Realloc_2-START+1
+E883 46 00       6 416 DEFW    Realloc_3-START+1
+E885 56 00       6 417 DEFW    Realloc_4-START+1
+E887 F3 00       6 418 DEFW    Realloc_5-START+1
+E889 14 01       6 419 DEFW    Realloc_6-START+1
+E88B 25 01       6 420 DEFW    Realloc_7-START+1
+E88D 2A 01       6 421 DEFW    Realloc_8-START+1
+E88F 32 01       6 422 DEFW    Realloc_9-START+1
+E891 44 01       6 423 DEFW    Realloc_10-START+1
+E893 48 01       6 424 DEFW    Realloc_11-START+1
+E895 8D 01       6 425 DEFW    Realloc_12-START+1
+E897 97 01       6 426 DEFW    Realloc_13-START+1
+E899 A4 01       6 427 DEFW    Realloc_14-START+1
+E89B BA 01       6 428 DEFW    Realloc_15-START+1
+E89D BF 01       6 429 DEFW    Realloc_16-START+1
+E89F C3 01       6 430 DEFW    Realloc_17-START+1
+E8A1 C8 01       6 431 DEFW    Realloc_18-START+1
+E8A3 DB 01       6 432 DEFW    Realloc_19-START+1
+E8A5 EE 01       6 433 DEFW    Realloc_20-START+1
+E8A7 F7 01       6 434 DEFW    Realloc_21-START+1
+E8A9 FC 01       6 435 DEFW    Realloc_22-START+1
+E8AB FF 01       6 436 DEFW    Realloc_23-START+1
+E8AD 09 02       6 437 DEFW    Realloc_24-START+1
+E8AF 0C 02       6 438 DEFW    Realloc_25-START+1
+E8B1 10 02       6 439 DEFW    Realloc_26-START+1
+E8B3 19 02       6 440 DEFW    Realloc_27-START+1
+E8B5 24 02       6 441 DEFW    Realloc_28-START+1
+E8B7 3F 02       6 442 DEFW    Realloc_29-START+1
+E8B9 42 02       6 443 DEFW    Realloc_30-START+1
+E8BB 73 02       6 444 DEFW    Realloc_31-START+1
+E8BD 79 02       6 445 DEFW    Realloc_32-START+1
+E8BF 84 02       6 446 DEFW    Realloc_33-START+1
+E8C1 8C 02       6 447 DEFW    Realloc_34-START+2
+E8C3 90 02       6 448 DEFW    Realloc_35-START+2
+E8C5 95 02       6 449 DEFW    Realloc_36-START+1
+E8C7 99 02       6 450 DEFW    Realloc_37-START+1
+E8C9 9D 02       6 451 DEFW    Realloc_38-START+2
+E8CB A5 02       6 452 DEFW    Realloc_39-START+1
+E8CD A9 02       6 453 DEFW    Realloc_40-START+1
+E8CF B3 02       6 454 DEFW    Realloc_41-START+1
+E8D1 BE 02       6 455 DEFW    Realloc_42-START+1
+E8D3 C3 02       6 456 DEFW    Realloc_43-START+1
+E8D5 D7 02       6 457 DEFW    Realloc_44-START+1
+E8D7 E2 02       6 458 DEFW    Realloc_45-START+1
+E8D9 08 03       6 459 DEFW    Realloc_46-START+1
+E8DB 0C 03       6 460 DEFW    Realloc_47-START+1
+E8DD 3D 03       6 461 DEFW    Realloc_48-START+1
+E8DF 41 03       6 462 DEFW    Realloc_49-START+1
+E8E1 46 03       6 463 DEFW    Realloc_50-START+1
+E8E3 4D 03       6 464 DEFW    Realloc_51-START+1
+E8E5 58 03       6 465 DEFW    Realloc_52-START+1
+E8E7 5F 03       6 466 DEFW    Realloc_53-START+1
+E8E9 6B 03       6 467 DEFW    Realloc_54-START+1
+E8EB 85 03       6 468 DEFW    Realloc_55-START+1
+E8ED 88 03       6 469 DEFW    Realloc_56-START+1
+E8EF A1 03       6 470 DEFW    Realloc_57-START+1
+E8F1 00 00       6 471 DEFW    $0000
