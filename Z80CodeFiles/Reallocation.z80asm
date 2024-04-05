@@ -5,11 +5,10 @@
 ; **********************************************************************************************************************
 
 
-; Reallocation: Reallocate pointers and calls pointed to by the 'Realloc_X' tags
+; Reallocate pointers and calls pointed to by the 'Realloc_X' tags
 ;   On entry: HL = address of reallocation addresses (Realloc_Addrs)
 ;             BC = address of program start
 ;   On exit:  BC IX IY I AF' BC' DE' HL' preserved
-; This space is reused for the internal stack
 Reallocation:
                     ld      e, (hl)                     ; DE = relative reallocation address
                     inc     hl
@@ -36,13 +35,13 @@ Reallocation:
                     pop     hl                          ; Restore next relative reallocation address
                     jr      Reallocation                ; Repeat again
 
-                    DEFS    16                          ; Add more space for stack
-
-; Put 'JP Init' at the start of program for the re-entry
-Re_Entry:
-                    ld      a, $C3                      ; 'JP' opcode
 ; From this point on, all address parameters of the instructions pointed to by the 'Realloc_X' tags
-;  are updated with the corresponding absolute address
+;  have been updated with the corresponding absolute address.
+
+Re_Entry:
+; Put 'JP Init' at the start of program for the re-entry
+                    ld      a, $C3                      ; 'JP' opcode
+
 Realloc_A           ld      ($0000), a                  ; Put it at program start
 Realloc_B           ld      hl, Init-START              ; HL points to Init
 Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction

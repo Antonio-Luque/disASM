@@ -405,9 +405,10 @@ StrLabels:
                     DEFM    "from:"
                     DEFM    "  to:"
 
-; String buffer and relative reallocation addresses ** MUST be below StrLabels **
-kStrBuffer:
+; Relative reallocation addresses ** MUST be below StrLabels **
+; This space is reused for the string buffer and the internal stack
 Realloc_Addrs:
+kStrBuffer:
                     DEFW    Realloc_A-START+1
                     DEFW    Realloc_B-START+1
                     DEFW    Realloc_C-START+1
@@ -444,12 +445,12 @@ Realloc_Addrs:
                     DEFW    Realloc_31-START+1
                     DEFW    Realloc_32-START+1
                     DEFW    Realloc_33-START+1
-                    DEFW    Realloc_34-START+2
-                    DEFW    Realloc_35-START+2
+                    DEFW    Realloc_34-START+2          ; ld ix,nn
+                    DEFW    Realloc_35-START+2          ; ld (nn),de
                     DEFW    Realloc_36-START+1
                     DEFW    Realloc_37-START+1
-                    DEFW    Realloc_38-START+2
-                    DEFW    Realloc_39-START+1
+                    DEFW    Realloc_38-START+1
+                    DEFW    Realloc_39-START+2          ; ld (nn),de
                     DEFW    Realloc_40-START+1
                     DEFW    Realloc_41-START+1
                     DEFW    Realloc_42-START+1
@@ -467,5 +468,6 @@ Realloc_Addrs:
                     DEFW    Realloc_54-START+1
                     DEFW    Realloc_55-START+1
                     DEFW    Realloc_56-START+1
-                    DEFW    Realloc_57-START+1
                     DEFW    $0000
+; The stack begins here
+END
