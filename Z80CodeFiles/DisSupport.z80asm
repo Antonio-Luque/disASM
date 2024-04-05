@@ -257,6 +257,7 @@ SubEnd:
 
 ; Disassembler: Write full disassembly to string buffer
 ;   On entry: HL = Start of instruction to be disassembled
+;             DE = String buffer address
 ;   On exit:  Address, opcodes and mnemonic in current string buffer
 ;             iDisIndex variable used
 ;             A = Length of instruction in bytes
