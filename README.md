@@ -7,7 +7,7 @@ A Disassembler for ZX Spectrum. Based on Disassembler support from Small Compute
 - Can be loaded at any RAM address (below the System Variables).
 - Use an internal stack.
 - Recognizes undocumented opcodes related to IXH, IXL, IYH and IYL registers.
-- Need only 2 Kbytes of RAM.
+- Need less than 2 Kbytes of RAM.
 
 ### Usage:
 1. LOAD ""CODE \<address\> (default: 57600)
