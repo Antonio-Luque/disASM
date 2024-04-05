@@ -9,8 +9,6 @@ CL_ALL              EQU     $0DAF                       ; Clear the whole displa
 CHAN_OPEN           EQU     $1601                       ; Open channel subroutine
 PR_STRING           EQU     $203C                       ; Print string
 LAST_K              EQU     $5C08                       ; Last key pressed
-SPOS_N              EQU     $5C88                       ; Column and line for PRINT position
-SCR_CT              EQU     $5C8C                       ; Scroll counter
 
 ; Control characters
 CHR_LEFT            EQU     $08                         ; Move cursor backwards
@@ -34,7 +32,7 @@ Print_Label:
                     push    bc                          ; Store current number of inputs
                     ld      bc, 5                       ; Length of string
                     call    PR_STRING                   ; Print string
-                    push    de                          ; Store next string pointer ("  to")
+                    push    de                          ; Store next string pointer
                     inc     c                           ; Set C = 0 (current number of nibbles)
 Get_Address:
                     ld      a, CHR_FLASH                ; Activate flash attribute
@@ -136,14 +134,11 @@ Next_Address:
 PrintDisassembly:
                     push    hl                          ; Store pointer to next instruction to be disassembled
 
-                    ld      a, (SPOS_N+1)               ; Get line for PRINT position
-                    ld      e, a                        ; Save it in E
-                    ld      a, (SCR_CT)                 ; Get scroll counter
-                    add     a, e                        ; Sum both
-                    cp      3                           ; Is it = 3 (reach last line) ?
-                    jr      nz, Print                   ; No, print buffer
+                    ld      a, 2                        ; Set bottom line limit to print (top line = 24)
+                    cp      (iy+79)                     ; Compares with current line number (S_POSN+1 system varible)
+                    jr      nz, Print                   ; If limit not reached then print buffer
 
-                    ld      a, 1                        ; Open channel #1 (last two lines)
+                    dec     a                           ; Open channel #1 (last two lines)
                     call    CHAN_OPEN
 Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
                     ld      bc, 5                       ; BC = length of string
