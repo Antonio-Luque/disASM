@@ -1,5 +1,5 @@
 
-; File #0: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\disASM.z80asm
+; File #0: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\disASM.z80asm
 
 8000             0 1 ; **********************************************************************************************************************
 8000             0 2 ; **  disASM                                                                                                          **
@@ -11,11 +11,11 @@
 8000             0 8 ; **********************************************************************************************************************
 8000             0 11 START               ORG     $E100
 E100             0 13 Main:
-E100 21 40 07    0 14 ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
+E100 21 3A 07    0 14 ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
 E103 09          0 15 add     hl, bc                      ; Move HL to absolute address of reallocation addresses
 E104             0 17 ; Avoid 'call Reallocation'
 
-; File #1: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\Reallocation.z80asm
+; File #1: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Reallocation.z80asm
 
 E104             1 1 ; **********************************************************************************************************************
 E104             1 2 ; **  Reallocation                                                                        by HiSoft Devpac, (C) 1983  **
@@ -59,11 +59,11 @@ E11F 32 00 00    1 45 Realloc_A           ld      ($0000), a                  ; 
 E122 21 28 00    1 46 Realloc_B           ld      hl, Init-START              ; HL points to Init
 E125 22 01 00    1 47 Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction
 
-; File #0: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\disASM.z80asm
+; File #0: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\disASM.z80asm
 
 E128             0 20 ; Re-entry of program after first execution
 E128             0 21 Init:
-E128 21 B8 07    0 22 ld      hl, END-START               ; HL points to relative address of stack address
+E128 21 B2 07    0 22 ld      hl, END-START               ; HL points to relative address of stack address
 E12B 09          0 23 add     hl, bc                      ; Move HL to absolute address of stack addresses
 E12C F9          0 24 ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
 E12D CD 41 00    0 26 Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
@@ -71,7 +71,7 @@ E130             0 28 ; Disassembly loop
 E130             0 29 DisInstruction:
 E130 C5          0 30 push    bc                          ; Store "to"+1 address
 E131 D5          0 31 push    de                          ; Store string buffer address
-E132 CD 65 02    0 33 Realloc_2           call    DisWrInstruction-START      ; Write fully disassembly instruction in buffer
+E132 CD 5F 02    0 33 Realloc_2           call    DisWrInstruction-START      ; Write fully disassembly instruction in buffer
 E135 CD CF 00    0 34 Realloc_3           call    PrintDisassembly-START      ; Print buffer
 E138 D1          0 36 pop     de                          ; Restore string buffer address
 E139 C1          0 37 pop     bc                          ; Restore "to"+1 address
@@ -83,7 +83,7 @@ E13F CF          0 44 rst     $08                         ; return to BASIC: "0 
 E140 FF          0 45 DEFB    $FF
 E141             0 48 ; Support routines and data
 
-; File #2: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\IOSupport.z80asm
+; File #2: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\IOSupport.z80asm
 
 E141             2 1 ; **********************************************************************************************************************
 E141             2 2 ; **  Input/Output support                                                                          by Antonio Luque  **
@@ -94,1284 +94,1280 @@ E141             2 8 CL_ALL              EQU     $0DAF                       ; C
 E141             2 9 CHAN_OPEN           EQU     $1601                       ; Open channel subroutine
 E141             2 10 PR_STRING           EQU     $203C                       ; Print string
 E141             2 11 LAST_K              EQU     $5C08                       ; Last key pressed
-E141             2 12 SPOS_N              EQU     $5C88                       ; Column and line for PRINT position
-E141             2 13 SCR_CT              EQU     $5C8C                       ; Scroll counter
-E141             2 15 ; Control characters
-E141             2 16 CHR_LEFT            EQU     $08                         ; Move cursor backwards
-E141             2 17 CHR_DELETE          EQU     $0C                         ; Delete
-E141             2 18 CHR_FLASH           EQU     $12                         ; Flash attribute
-E141             2 21 ; IOSupport: Input "from" and "to" addresses from keyboard
-E141             2 22 ;  On entry: -
-E141             2 23 ;  On exit:  HL = Start of instruction to be disassembled ("from")
-E141             2 24 ;            BC = End of instrucction to be disassembled ("to"+1)
-E141             2 25 ;            DE = Start of string buffer
-E141             2 26 ;            IX IY I AF' preserved
-E141             2 27 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
-E141             2 28 InputAddresses:
-E141 CD 6E 0D    2 29 call    CLS_LOWER                   ; Clear the lower part of the display
-E144 11 36 07    2 31 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
-E147 06 02       2 32 ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
-E149             2 33 Print_Label:
-E149 C5          2 34 push    bc                          ; Store current number of inputs
-E14A 01 05 00    2 35 ld      bc, 5                       ; Length of string
-E14D CD 3C 20    2 36 call    PR_STRING                   ; Print string
-E150 D5          2 37 push    de                          ; Store next string pointer ("  to")
-E151 0C          2 38 inc     c                           ; Set C = 0 (current number of nibbles)
-E152             2 39 Get_Address:
-E152 3E 12       2 40 ld      a, CHR_FLASH                ; Activate flash attribute
-E154 D7          2 41 rst     $10
-E155 3E 01       2 42 ld      a, 1
-E157 D7          2 43 rst     $10
-E158 3E 4C       2 44 ld      a, 'L'                      ; Print 'L' cursor
-E15A D7          2 45 rst     $10
-E15B 3E 12       2 46 ld      a, CHR_FLASH                ; Deactivate flash attribute
-E15D D7          2 47 rst     $10
-E15E AF          2 48 xor     a
-E15F D7          2 49 rst     $10
-E160 FD CB 01 AE 2 50 res     5, (iy+1)                   ; Set key pressed flag = off
-E164             2 51 Wait_Key:
-E164 FD CB 01 6E 2 52 bit     5, (iy+1)                   ; Key pressed?
-E168 28 FA       2 53 jr      z, Wait_Key                 ; No, repeat until key pressed
-E16A 3E 08       2 54 ld      a, CHR_LEFT                 ; Move cursor left
-E16C D7          2 55 rst     $10
-E16D 3A 08 5C    2 56 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
-E170 FE 0C       2 57 cp      CHR_DELETE                  ; Is it Delete?
-E172 28 35       2 58 jr      z, Delete                   ; Yes, perform deleting of previous character
-E174 FE 30       2 59 cp      '0'                         ; Is it < '0' ?
-E176 38 DA       2 60 jr      c, Get_Address              ; Yes, repeat key input
-E178 FE 67       2 61 cp      'g'                         ; Is it >= 'g' ?
-E17A 30 D6       2 62 jr      nc, Get_Address             ; Yes, repeat key input
-E17C FE 3A       2 63 cp      ':'                         ; Is it < ':' ?
-E17E 38 04       2 64 jr      c, Input_OK                 ; Yes, perform key input
-E180 FE 61       2 65 cp      'a'                         ; Is it < 'a' ?
-E182 38 CE       2 66 jr      c, Get_Address              ; Yes, repeat key input
-E184             2 68 ; ASCII code is between '0' and '9' or between 'a' and 'f'
-E184             2 69 Input_OK:
-E184 D7          2 70 rst     $10                         ; Print ASCII code
-E185 3A 08 5C    2 71 ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
-E188 D6 30       2 72 sub     '0'                         ; Convert ASCII to decimal number range
-E18A FE 0A       2 73 cp      10                          ; Is it in range 0..9 ?
-E18C 38 02       2 74 jr      c, High_Nibble              ; Yes, perform high nibble
-E18E D6 27       2 75 sub     'a'-'0'-10                  ; No, convert to range A..F
-E190             2 76 High_Nibble:
-E190 0C          2 77 inc     c                           ; Increment current number of nibbles
-E191 CB 41       2 78 bit     0, c                        ; Check if number of nibbles is odd or even 
-E193 28 05       2 79 jr      z, Low_Nibble               ; If odd, perform low nibble
-E195 87          2 80 add     a, a                        ; Multiply number by 16
-E196 87          2 81 add     a, a
-E197 87          2 82 add     a, a
-E198 87          2 83 add     a, a
-E199 47          2 84 ld      b, a                        ; Save high nibble in B
-E19A             2 85 Low_Nibble:
-E19A B0          2 86 or      b                           ; Bitwise OR with high nibble (get byte)
-E19B 47          2 87 ld      b, a                        ; Save byte in B
-E19C 79          2 88 ld      a, c                        ; Get current number of nibbles
-E19D FE 04       2 89 cp      4                           ; Is it 4 ?
-E19F 28 1F       2 90 jr      z, Next_Address             ; Yes, prepare for next address ("to")
-E1A1 1F          2 91 rra                                 ; Is it odd ?
-E1A2 38 AE       2 92 jr      c, Get_Address              ; Yes, continue with next nibble
-E1A4 60          2 93 ld      h, b                        ; Store high byte of address in H
-E1A5 06 00       2 94 ld      b, 0                        ; Reset high nibble
-E1A7 18 A9       2 95 jr      Get_Address                 ; Continue with next nibble
-E1A9             2 96 ; Delete key pressed
-E1A9             2 97 Delete:
-E1A9 79          2 98 ld      a, c                        ; Get current number of nibbles
-E1AA B7          2 99 or      a                           ; Is it = 0 ?
-E1AB 28 A5       2 100 jr      z, Get_Address              ; Yes, nothing to delete
-E1AD 1F          2 101 rra                                 ; Is it odd ?
-E1AE 38 04       2 102 jr      c, Cursor_Left              ; Yes, move cursor left
-E1B0 7C          2 103 ld      a, h                        ; If even, recover byte previous byte from H
-E1B1 E6 F0       2 104 and     %11110000                   ;  and store high nibble in B
-E1B3 47          2 105 ld      b, a
-E1B4             2 106 Cursor_Left:
-E1B4 0D          2 107 dec     c                           ; Decrement number of nibbles
-E1B5 3E 20       2 108 ld      a, ' '                      ; Print space (delete character)
-E1B7 D7          2 109 rst     $10
-E1B8 3E 08       2 110 ld      a, CHR_LEFT                 ; Move cursor left two times
-E1BA D7          2 111 rst     $10
-E1BB 3E 08       2 112 ld      a, CHR_LEFT
-E1BD D7          2 113 rst     $10
-E1BE 18 92       2 114 jr      Get_Address                 ; Continue with next nibble
-E1C0             2 115 ; Store "from" address and prepare input of "to" address
-E1C0             2 116 Next_Address:
-E1C0 68          2 117 ld      l, b                        ; Store low byte of address in L
-E1C1 D9          2 118 exx                                 ; Store address in HL'
-E1C2 D1          2 119 pop     de                          ; Restore next string pointer ("  to")
-E1C3 C1          2 120 pop     bc                          ; Restore current number of inputs
-E1C4 10 83       2 121 djnz    Print_Label                 ; Repeat for each address
-E1C6             2 123 ; The "from" and "to" addresses are in HL and HL' respectively
-E1C6 D9          2 124 exx                                 ; HL = "to" address, HL' = "from" address
-E1C7 E5          2 125 push    hl                          ; Store "to" address
-E1C8 CD AF 0D    2 126 call    CL_ALL                      ; Clear display area
-E1CB D9          2 127 exx                                 ; HL = "from" address
-E1CC C1          2 128 pop     bc                          ; Restore "to" address in BC
-E1CD 03          2 129 inc     bc                          ; Increment "to" address
-E1CE C9          2 130 ret
-E1CF             2 133 ; IOSupport: Print fully disassembly from string buffer
-E1CF             2 134 ;  On entry: -
-E1CF             2 135 ;  On exit:  HL IX IY I AF' BC' DE' HL' preserved
-E1CF             2 136 PrintDisassembly:
-E1CF E5          2 137 push    hl                          ; Store pointer to next instruction to be disassembled
-E1D0 3A 89 5C    2 139 ld      a, (SPOS_N+1)               ; Get line for PRINT position
-E1D3 5F          2 140 ld      e, a                        ; Save it in E
-E1D4 3A 8C 5C    2 141 ld      a, (SCR_CT)                 ; Get scroll counter
-E1D7 83          2 142 add     a, e                        ; Sum both
-E1D8 FE 03       2 143 cp      3                           ; Is it = 3 (reach last line) ?
-E1DA 20 26       2 144 jr      nz, Print                   ; No, print buffer
-E1DC 3E 01       2 146 ld      a, 1                        ; Open channel #1 (last two lines)
-E1DE CD 01 16    2 147 call    CHAN_OPEN
-E1E1 11 31 07    2 148 Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
-E1E4 01 05 00    2 149 ld      bc, 5                       ; BC = length of string
-E1E7 CD 3C 20    2 150 call    PR_STRING                   ; Print string
-E1EA FD CB 01 AE 2 151 res     5, (iy+1)                   ; Set key pressed flag = off
-E1EE             2 152 Wait_More:
-E1EE FD CB 01 6E 2 153 bit     5, (iy+1)                   ; Key pressed?
-E1F2 28 FA       2 154 jr      z, Wait_More                ; No, repeat until key pressed
-E1F4 3A 08 5C    2 155 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
-E1F7 FE 20       2 156 cp      ' '                         ; Is it space?
-E1F9 28 16       2 157 jr      z, Break                    ; Yes, return to BASIC
-E1FB FE 6E       2 158 cp      'n'                         ; Is it = 'n' ?
-E1FD 28 10       2 159 jr      z, Stop                     ; Yes, return to BASIC
-E1FF CD AF 0D    2 160 call    CL_ALL                      ; Clear display area
-E202             2 161 Print:
-E202 11 40 07    2 162 Realloc_6           ld      de, kStrBuffer-START        ; DE points to string buffer
-E205 1A          2 163 ld      a, (de)                     ; Get string length
-E206 13          2 164 inc     de                          ; Move DE to first character of the string
-E207 06 00       2 165 ld      b, 0                        ; BC = length of the string
-E209 4F          2 166 ld      c, a
-E20A CD 3C 20    2 167 call    PR_STRING                   ; Print string
-E20D E1          2 169 pop     hl                          ; Restore pointer to next instruction to be disassembled
-E20E C9          2 170 ret
-E20F             2 171 Stop:
-E20F CF          2 172 rst     $08                         ; return to BASIC: "9 STOP statement, "
-E210 08          2 173 DEFB    $08
-E211             2 174 Break:
-E211 CF          2 175 rst     $08                         ; return to BASIC: "L BREAK into program, "
-E212 14          2 176 DEFB    $14
+E141             2 13 ; Control characters
+E141             2 14 CHR_LEFT            EQU     $08                         ; Move cursor backwards
+E141             2 15 CHR_DELETE          EQU     $0C                         ; Delete
+E141             2 16 CHR_FLASH           EQU     $12                         ; Flash attribute
+E141             2 19 ; IOSupport: Input "from" and "to" addresses from keyboard
+E141             2 20 ;  On entry: -
+E141             2 21 ;  On exit:  HL = Start of instruction to be disassembled ("from")
+E141             2 22 ;            BC = End of instrucction to be disassembled ("to"+1)
+E141             2 23 ;            DE = Start of string buffer
+E141             2 24 ;            IX IY I AF' preserved
+E141             2 25 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
+E141             2 26 InputAddresses:
+E141 CD 6E 0D    2 27 call    CLS_LOWER                   ; Clear the lower part of the display
+E144 11 30 07    2 29 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
+E147 06 02       2 30 ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
+E149             2 31 Print_Label:
+E149 C5          2 32 push    bc                          ; Store current number of inputs
+E14A 01 05 00    2 33 ld      bc, 5                       ; Length of string
+E14D CD 3C 20    2 34 call    PR_STRING                   ; Print string
+E150 D5          2 35 push    de                          ; Store next string pointer
+E151 0C          2 36 inc     c                           ; Set C = 0 (current number of nibbles)
+E152             2 37 Get_Address:
+E152 3E 12       2 38 ld      a, CHR_FLASH                ; Activate flash attribute
+E154 D7          2 39 rst     $10
+E155 3E 01       2 40 ld      a, 1
+E157 D7          2 41 rst     $10
+E158 3E 4C       2 42 ld      a, 'L'                      ; Print 'L' cursor
+E15A D7          2 43 rst     $10
+E15B 3E 12       2 44 ld      a, CHR_FLASH                ; Deactivate flash attribute
+E15D D7          2 45 rst     $10
+E15E AF          2 46 xor     a
+E15F D7          2 47 rst     $10
+E160 FD CB 01 AE 2 48 res     5, (iy+1)                   ; Set key pressed flag = off
+E164             2 49 Wait_Key:
+E164 FD CB 01 6E 2 50 bit     5, (iy+1)                   ; Key pressed?
+E168 28 FA       2 51 jr      z, Wait_Key                 ; No, repeat until key pressed
+E16A 3E 08       2 52 ld      a, CHR_LEFT                 ; Move cursor left
+E16C D7          2 53 rst     $10
+E16D 3A 08 5C    2 54 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+E170 FE 0C       2 55 cp      CHR_DELETE                  ; Is it Delete?
+E172 28 35       2 56 jr      z, Delete                   ; Yes, perform deleting of previous character
+E174 FE 30       2 57 cp      '0'                         ; Is it < '0' ?
+E176 38 DA       2 58 jr      c, Get_Address              ; Yes, repeat key input
+E178 FE 67       2 59 cp      'g'                         ; Is it >= 'g' ?
+E17A 30 D6       2 60 jr      nc, Get_Address             ; Yes, repeat key input
+E17C FE 3A       2 61 cp      ':'                         ; Is it < ':' ?
+E17E 38 04       2 62 jr      c, Input_OK                 ; Yes, perform key input
+E180 FE 61       2 63 cp      'a'                         ; Is it < 'a' ?
+E182 38 CE       2 64 jr      c, Get_Address              ; Yes, repeat key input
+E184             2 66 ; ASCII code is between '0' and '9' or between 'a' and 'f'
+E184             2 67 Input_OK:
+E184 D7          2 68 rst     $10                         ; Print ASCII code
+E185 3A 08 5C    2 69 ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
+E188 D6 30       2 70 sub     '0'                         ; Convert ASCII to decimal number range
+E18A FE 0A       2 71 cp      10                          ; Is it in range 0..9 ?
+E18C 38 02       2 72 jr      c, High_Nibble              ; Yes, perform high nibble
+E18E D6 27       2 73 sub     'a'-'0'-10                  ; No, convert to range A..F
+E190             2 74 High_Nibble:
+E190 0C          2 75 inc     c                           ; Increment current number of nibbles
+E191 CB 41       2 76 bit     0, c                        ; Check if number of nibbles is odd or even 
+E193 28 05       2 77 jr      z, Low_Nibble               ; If odd, perform low nibble
+E195 87          2 78 add     a, a                        ; Multiply number by 16
+E196 87          2 79 add     a, a
+E197 87          2 80 add     a, a
+E198 87          2 81 add     a, a
+E199 47          2 82 ld      b, a                        ; Save high nibble in B
+E19A             2 83 Low_Nibble:
+E19A B0          2 84 or      b                           ; Bitwise OR with high nibble (get byte)
+E19B 47          2 85 ld      b, a                        ; Save byte in B
+E19C 79          2 86 ld      a, c                        ; Get current number of nibbles
+E19D FE 04       2 87 cp      4                           ; Is it 4 ?
+E19F 28 1F       2 88 jr      z, Next_Address             ; Yes, prepare for next address ("to")
+E1A1 1F          2 89 rra                                 ; Is it odd ?
+E1A2 38 AE       2 90 jr      c, Get_Address              ; Yes, continue with next nibble
+E1A4 60          2 91 ld      h, b                        ; Store high byte of address in H
+E1A5 06 00       2 92 ld      b, 0                        ; Reset high nibble
+E1A7 18 A9       2 93 jr      Get_Address                 ; Continue with next nibble
+E1A9             2 94 ; Delete key pressed
+E1A9             2 95 Delete:
+E1A9 79          2 96 ld      a, c                        ; Get current number of nibbles
+E1AA B7          2 97 or      a                           ; Is it = 0 ?
+E1AB 28 A5       2 98 jr      z, Get_Address              ; Yes, nothing to delete
+E1AD 1F          2 99 rra                                 ; Is it odd ?
+E1AE 38 04       2 100 jr      c, Cursor_Left              ; Yes, move cursor left
+E1B0 7C          2 101 ld      a, h                        ; If even, recover byte previous byte from H
+E1B1 E6 F0       2 102 and     %11110000                   ;  and store high nibble in B
+E1B3 47          2 103 ld      b, a
+E1B4             2 104 Cursor_Left:
+E1B4 0D          2 105 dec     c                           ; Decrement number of nibbles
+E1B5 3E 20       2 106 ld      a, ' '                      ; Print space (delete character)
+E1B7 D7          2 107 rst     $10
+E1B8 3E 08       2 108 ld      a, CHR_LEFT                 ; Move cursor left two times
+E1BA D7          2 109 rst     $10
+E1BB 3E 08       2 110 ld      a, CHR_LEFT
+E1BD D7          2 111 rst     $10
+E1BE 18 92       2 112 jr      Get_Address                 ; Continue with next nibble
+E1C0             2 113 ; Store "from" address and prepare input of "to" address
+E1C0             2 114 Next_Address:
+E1C0 68          2 115 ld      l, b                        ; Store low byte of address in L
+E1C1 D9          2 116 exx                                 ; Store address in HL'
+E1C2 D1          2 117 pop     de                          ; Restore next string pointer ("  to")
+E1C3 C1          2 118 pop     bc                          ; Restore current number of inputs
+E1C4 10 83       2 119 djnz    Print_Label                 ; Repeat for each address
+E1C6             2 121 ; The "from" and "to" addresses are in HL and HL' respectively
+E1C6 D9          2 122 exx                                 ; HL = "to" address, HL' = "from" address
+E1C7 E5          2 123 push    hl                          ; Store "to" address
+E1C8 CD AF 0D    2 124 call    CL_ALL                      ; Clear display area
+E1CB D9          2 125 exx                                 ; HL = "from" address
+E1CC C1          2 126 pop     bc                          ; Restore "to" address in BC
+E1CD 03          2 127 inc     bc                          ; Increment "to" address
+E1CE C9          2 128 ret
+E1CF             2 131 ; IOSupport: Print fully disassembly from string buffer
+E1CF             2 132 ;  On entry: -
+E1CF             2 133 ;  On exit:  HL IX IY I AF' BC' DE' HL' preserved
+E1CF             2 134 PrintDisassembly:
+E1CF E5          2 135 push    hl                          ; Store pointer to next instruction to be disassembled
+E1D0 3E 02       2 137 ld      a, 2                        ; Set bottom line limit to print (top line = 24)
+E1D2 FD BE 4F    2 138 cp      (iy+79)                     ; Compares with current line number (S_POSN+1 system varible)
+E1D5 20 25       2 139 jr      nz, Print                   ; If limit not reached then print buffer
+E1D7 3D          2 141 dec     a                           ; Open channel #1 (last two lines)
+E1D8 CD 01 16    2 142 call    CHAN_OPEN
+E1DB 11 2B 07    2 143 Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
+E1DE 01 05 00    2 144 ld      bc, 5                       ; BC = length of string
+E1E1 CD 3C 20    2 145 call    PR_STRING                   ; Print string
+E1E4 FD CB 01 AE 2 146 res     5, (iy+1)                   ; Set key pressed flag = off
+E1E8             2 147 Wait_More:
+E1E8 FD CB 01 6E 2 148 bit     5, (iy+1)                   ; Key pressed?
+E1EC 28 FA       2 149 jr      z, Wait_More                ; No, repeat until key pressed
+E1EE 3A 08 5C    2 150 ld      a, (LAST_K)                 ; Get ASCII code of key pressed
+E1F1 FE 20       2 151 cp      ' '                         ; Is it space?
+E1F3 28 16       2 152 jr      z, Break                    ; Yes, return to BASIC
+E1F5 FE 6E       2 153 cp      'n'                         ; Is it = 'n' ?
+E1F7 28 10       2 154 jr      z, Stop                     ; Yes, return to BASIC
+E1F9 CD AF 0D    2 155 call    CL_ALL                      ; Clear display area
+E1FC             2 156 Print:
+E1FC 11 3A 07    2 157 Realloc_6           ld      de, kStrBuffer-START        ; DE points to string buffer
+E1FF 1A          2 158 ld      a, (de)                     ; Get string length
+E200 13          2 159 inc     de                          ; Move DE to first character of the string
+E201 06 00       2 160 ld      b, 0                        ; BC = length of the string
+E203 4F          2 161 ld      c, a
+E204 CD 3C 20    2 162 call    PR_STRING                   ; Print string
+E207 E1          2 164 pop     hl                          ; Restore pointer to next instruction to be disassembled
+E208 C9          2 165 ret
+E209             2 166 Stop:
+E209 CF          2 167 rst     $08                         ; return to BASIC: "9 STOP statement, "
+E20A 08          2 168 DEFB    $08
+E20B             2 169 Break:
+E20B CF          2 170 rst     $08                         ; return to BASIC: "L BREAK into program, "
+E20C 14          2 171 DEFB    $14
 
-; File #3: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\Strings.z80asm
+; File #3: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Strings.z80asm
 
-E213             3 1 ; **********************************************************************************************************************
-E213             3 2 ; **  String support                                                                            by Stephen C Cousins  **
-E213             3 3 ; **                                                                                                                  **
-E213             3 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
-E213             3 5 ; **********************************************************************************************************************
-E213             3 9 ; String: Write address, colon, space to string buffer
-E213             3 10 ;   On entry: DE = Address
-E213             3 11 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
-E213             3 12 ; Example output: "1234: "
-E213             3 13 StrWrAddress:
-E213 CD 1F 01    3 14 Realloc_7           call    StrWrHexWord-START          ; Write start address of this line
-E216 3E 3A       3 16 ld      a, ':'
-E218 CD 37 01    3 17 Realloc_8           call    StrWrChar-START             ; Write colon
-E21B 3E 20       3 18 ld      a, ' '
-E21D 18 18       3 19 jr      StrWrChar                   ; Write space
-E21F             3 22 ; String: Write hex word to string buffer
-E21F             3 23 ;   On entry: DE = Hex word
-E21F             3 24 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
-E21F             3 25 StrWrHexWord:
-E21F 7A          3 26 ld      a, d                        ; Get hi byte
-E220 CD 24 01    3 27 Realloc_9           call    StrWrHexByte-START          ; Write as two hex digits
-E223 7B          3 28 ld      a, e                        ; Get lo byte
-E224             3 29 ; String: Write hex byte to string buffer
-E224             3 30 ;   On entry: A = Hex byte
-E224             3 31 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
-E224             3 32 StrWrHexByte:
-E224 4F          3 33 ld      c, a                        ; Save byte to convert
-E225 1F          3 34 rra                                 ; Shift top nibble to
-E226 1F          3 35 rra                                 ;  botom four bits..
-E227 1F          3 36 rra
-E228 1F          3 37 rra
-E229 E6 0F       3 38 and     %00001111                   ; Mask off unwanted bits
-E22B CD 31 01    3 39 Realloc_10          call    StrWrHexNibble-START        ; Write top nibble
-E22E 79          3 40 ld      a, c                        ; Restore byte to convert
-E22F E6 0F       3 41 and     %00001111                   ; Mask off unwanted bits
-E231             3 42 ; String: Write hex nibble to string buffer
-E231             3 43 ;   On entry: A = Hex nibble
-E231             3 44 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
-E231             3 45 ; https://wikiti.brandonw.net/index.php?title=Z80_Optimization#DAA_trick
-E231             3 46 StrWrHexNibble:
-E231 FE 0A       3 47 cp      10                          ; if (nibble < 10) then (carry = on)
-E233 3F          3 48 ccf                                 ; invert carry
-E234 CE 30       3 49 adc     a, $30                      ; A = nibble + $30 or $31
-E236 27          3 50 daa                                 ; convert nibble to ASCII
-E237             3 51 ; String: Write character
-E237             3 52 ;   On entry: A = Character to write to string buffer
-E237             3 53 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
-E237             3 54 ; The specified character is writted to the string buffer and a null
-E237             3 55 ; terminator added.
-E237             3 56 StrWrChar:
-E237 E5          3 57 push    hl                          ; Store HL register
-E238             3 58 iStrStart:
-E238 21 00 00    3 59 ld      hl, $0000                   ; HL points to current empty position of the string
-E23B 77          3 60 ld      (hl), a                     ; Store character at string position
-E23C 23          3 61 inc     hl                          ; Move HL to next empty position
-E23D 22 39 01    3 62 Realloc_11          ld      (iStrStart-START+1), hl     ; Update pointer to current empty position
-E240 E1          3 63 pop     hl                          ; Restore HL register
-E241 C9          3 64 ret
+E20D             3 1 ; **********************************************************************************************************************
+E20D             3 2 ; **  String support                                                                            by Stephen C Cousins  **
+E20D             3 3 ; **                                                                                                                  **
+E20D             3 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
+E20D             3 5 ; **********************************************************************************************************************
+E20D             3 9 ; String: Write address, colon, space to string buffer
+E20D             3 10 ;   On entry: DE = Address
+E20D             3 11 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
+E20D             3 12 ; Example output: "1234: "
+E20D             3 13 StrWrAddress:
+E20D CD 19 01    3 14 Realloc_7           call    StrWrHexWord-START          ; Write start address of this line
+E210 3E 3A       3 16 ld      a, ':'
+E212 CD 31 01    3 17 Realloc_8           call    StrWrChar-START             ; Write colon
+E215 3E 20       3 18 ld      a, ' '
+E217 18 18       3 19 jr      StrWrChar                   ; Write space
+E219             3 22 ; String: Write hex word to string buffer
+E219             3 23 ;   On entry: DE = Hex word
+E219             3 24 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
+E219             3 25 StrWrHexWord:
+E219 7A          3 26 ld      a, d                        ; Get hi byte
+E21A CD 1E 01    3 27 Realloc_9           call    StrWrHexByte-START          ; Write as two hex digits
+E21D 7B          3 28 ld      a, e                        ; Get lo byte
+E21E             3 29 ; String: Write hex byte to string buffer
+E21E             3 30 ;   On entry: A = Hex byte
+E21E             3 31 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
+E21E             3 32 StrWrHexByte:
+E21E 4F          3 33 ld      c, a                        ; Save byte to convert
+E21F 1F          3 34 rra                                 ; Shift top nibble to
+E220 1F          3 35 rra                                 ;  botom four bits..
+E221 1F          3 36 rra
+E222 1F          3 37 rra
+E223 E6 0F       3 38 and     %00001111                   ; Mask off unwanted bits
+E225 CD 2B 01    3 39 Realloc_10          call    StrWrHexNibble-START        ; Write top nibble
+E228 79          3 40 ld      a, c                        ; Restore byte to convert
+E229 E6 0F       3 41 and     %00001111                   ; Mask off unwanted bits
+E22B             3 42 ; String: Write hex nibble to string buffer
+E22B             3 43 ;   On entry: A = Hex nibble
+E22B             3 44 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
+E22B             3 45 ; https://wikiti.brandonw.net/index.php?title=Z80_Optimization#DAA_trick
+E22B             3 46 StrWrHexNibble:
+E22B FE 0A       3 47 cp      10                          ; if (nibble < 10) then (carry = on)
+E22D 3F          3 48 ccf                                 ; invert carry
+E22E CE 30       3 49 adc     a, $30                      ; A = nibble + $30 or $31
+E230 27          3 50 daa                                 ; convert nibble to ASCII
+E231             3 51 ; String: Write character
+E231             3 52 ;   On entry: A = Character to write to string buffer
+E231             3 53 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
+E231             3 54 ; The specified character is writted to the string buffer and a null
+E231             3 55 ; terminator added.
+E231             3 56 StrWrChar:
+E231 E5          3 57 push    hl                          ; Store HL register
+E232             3 58 iStrStart:
+E232 21 00 00    3 59 ld      hl, $0000                   ; HL points to current empty position of the string
+E235 77          3 60 ld      (hl), a                     ; Store character at string position
+E236 23          3 61 inc     hl                          ; Move HL to next empty position
+E237 22 33 01    3 62 Realloc_11          ld      (iStrStart-START+1), hl     ; Update pointer to current empty position
+E23A E1          3 63 pop     hl                          ; Restore HL register
+E23B C9          3 64 ret
 
-; File #4: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\DisSupport.z80asm
+; File #4: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\DisSupport.z80asm
 
-E242             4 1 ; **********************************************************************************************************************
-E242             4 2 ; **  Disassembler support                                                                      by Stephen C Cousins  **
-E242             4 3 ; **                                                                                                                  **
-E242             4 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
-E242             4 5 ; **********************************************************************************************************************
-E242             4 8 kDisBrack:          EQU     5                           ; Bracket flag
-E242             4 9 kDisImmed:          EQU     4                           ; Immediate value flag
-E242             4 10 kDisWord:           EQU     3                           ; Immediate value is word (not byte) flag
-E242             4 11 kDisLength:         EQU     2                           ; Substite two characters (not one) flag
-E242             4 12 kDisMask:           EQU     3                           ; Mask type 0=0x07,1=0x18,2=0x30,3=0x38
-E242             4 14 ; Control characters
-E242             4 15 CHR_ENTER           EQU     $0D
-E242             4 18 ; Disassembler: Write character to string buffer
-E242             4 19 ;   On entry: A = Character to write
-E242             4 20 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
-E242             4 21 ; This version of write character removes bit 7 (the new string flag)
-E242             4 22 ; and replaces "-" with "(HL)"
-E242             4 23 DisWrChar:
-E242 E6 7F       4 24 and     %01111111                   ; Mask off bit 7 (string start bit)
-E244 FE 2D       4 25 cp      '-'                         ; Code for "(HL)" ?
-E246 20 EF       4 26 jr      nz, StrWrChar               ; No, print character
-E248 3E 15       4 28 ld      a, kDisBracHL               ; String number for "(HL)"
-E24A             4 29 ; Write disassembler string
-E24A             4 30 ;   On entry: A = Disassembler data string number
-E24A             4 31 ;             B = Offset to current opcode from start of instruction
-E24A             4 32 ;             IY = Start address for current instruction
-E24A             4 33 ;   On exit:  C DE HL IX IY I AF' BC' DE' HL' preserved
-E24A             4 34 ;             B is incremented if (IX/IY+d) is substituted
-E24A             4 35 ; This version of write string removes bit 7 (the new string flag)
-E24A             4 36 ; If iDisTmp1 (the current index instruction opcode) is 0xDD or 0xFD, 
-E24A             4 37 ; is not zero then strings are replaced: 
-E24A             4 38 ;   HL is replaced with IX or IY
-E24A             4 39 ;   (HL) is replaced with (IX + d) or (IY + d) except for JP instruction
-E24A             4 40 ;   where is is just replaced by (IX) or (IY)
-E24A             4 41 DisWrString:
-E24A E5          4 42 push    hl                          ; Store HL register
-E24B 6F          4 44 ld      l, a                        ; Store string number
-E24C FE 6E       4 45 cp      kDisH                       ; String = H ?
-E24E 28 0C       4 46 jr      z, Subs                     ; Yes, so go do substitution
-E250 FE 71       4 47 cp      kDisL                       ; String = L ?
-E252 28 08       4 48 jr      z, Subs                     ; Yes, so go do substitution
-E254 FE 15       4 49 cp      kDisBracHL                  ; String = (HL) ?
-E256 28 04       4 50 jr      z, Subs                     ; Yes, so go do substitution
-E258 FE 18       4 51 cp      kDisHL                      ; String = HL ?
-E25A 20 0B       4 52 jr      nz, GotString               ; No, so just write the string
-E25C             4 53 ; Substitute IX/IY in HL string or (IX/IY+d) in (HL) string
-E25C             4 54 Subs:
-E25C             4 55 iDisIndex:
-E25C 3E 00       4 56 ld      a, $00                      ; Get index instruction opcode
-E25E B7          4 57 or      a                           ; Index instruction?
-E25F 28 06       4 58 jr      z, GotString                ; No, so skip substitutions
-E261 2C          4 59 inc     l                           ; Increment to IX string number
-E262 FE DD       4 60 cp      $DD                         ; IX instruction?
-E264 28 01       4 61 jr      z, GotString                ; Yes, so go write it
-E266 2C          4 62 inc     l                           ; Increment to IY string
-E267             4 63 GotString:
-E267 7D          4 64 ld      a, l                        ; Get string number
-E268 CD 66 03    4 65 Realloc_12          call    FindStringInList-START      ; Find start of string A
-E26B             4 66 ; HL now points to disassembler string
-E26B             4 67 Char:
-E26B 7E          4 68 ld      a, (hl)                     ; Get character from string
-E26C E6 7F       4 69 and     %01111111                   ; Mask off string start bit
-E26E FE 2B       4 70 cp      '+'                         ; Is it a '+' sign (displacement) ?
-E270 28 05       4 71 jr      z, Plus                     ; No, so skip to next character
-E272 CD 37 01    4 72 Realloc_13          call    StrWrChar-START             ; Write character
-E275 18 30       4 73 jr      Next                        ; No, so skip to next character
-E277             4 74 ; Encountered a plus sign so expecting to show a displacement
-E277             4 75 Plus:
-E277             4 76 iDisOpStr:
-E277 3E 00       4 77 ld      a, $00                      ; Get instruction string
-E279 FE 1E       4 78 cp      kDisJP                      ; JP instruction?
-E27B 20 07       4 79 jr      nz, Displace                ; No, so go show displacement
-E27D 3E 29       4 80 ld      a, ')'                      ; Yes, so just terminate with ')'
-E27F CD 37 01    4 81 Realloc_14          call    StrWrChar-START             ; Write close bracket character
-E282 18 28       4 82 jr      Exit
-E284             4 83 ; Show displacement in (IX+...) and (IY+...) instructions
-E284             4 84 Displace:
-E284 FD 7E 02    4 85 ld      a, (iy+2)                   ; Get index instruction displacement
-E287 FE 80       4 86 cp      $80                         ; Is it signed?
-E289 30 05       4 87 jr      nc, Signed                  ; Yes, negate index instruction displacement
-E28B 08          4 88 ex      af, af'                     ; Store unsigned index instruction displacement
-E28C 3E 2B       4 89 ld      a, '+'                      ; set '+' for unsigned
-E28E 18 05       4 90 jr      Convert
-E290             4 91 Signed:
-E290 ED 44       4 92 neg                                 ; Negate index instruction displacement
-E292 08          4 93 ex      af, af'                     ; Store signed index instruction displacement
-E293 3E 2D       4 94 ld      a, '-'                      ; set '-' for signed
-E295             4 95 Convert:
-E295 CD 37 01    4 96 Realloc_15          call    StrWrChar-START             ; Write plus or minus
-E298 3E 24       4 97 ld      a, '$'                      ; Write '$'
-E29A CD 37 01    4 98 Realloc_16          call    StrWrChar-START
-E29D 08          4 99 ex      af, af'                     ; Restore index instruction displacement
-E29E CD 24 01    4 100 Realloc_17          call    StrWrHexByte-START          ; Write index instruction displacement
-E2A1 3E 29       4 101 ld      a, ')'
-E2A3 CD 37 01    4 102 Realloc_18          call    StrWrChar-START             ; Write close bracket character
-E2A6 04          4 103 inc     b                           ; Increment opcode offset
-E2A7             4 104 ; Consider next character in disassembler string
-E2A7             4 105 Next:
-E2A7 23          4 106 inc     hl                          ; Point to next character
-E2A8 CB 7E       4 107 bit     7, (hl)                     ; Start of new string?
-E2AA 28 BF       4 108 jr      z, Char                     ; No, so go get next character
-E2AC             4 109 Exit:
-E2AC E1          4 110 pop     hl                          ; Restore HL register
-E2AD C9          4 111 ret
-E2AE             4 114 ; Disassembler: Write operand to buffer
-E2AE             4 115 ;   On entry: A = Operand string number
-E2AE             4 116 ;             B = Offset to opcode from start of instruction
-E2AE             4 117 ;             C = Primary op-code
-E2AE             4 118 ;             IY = Start address of instruction
-E2AE             4 119 ;   On exit:  A = Unspecified
-E2AE             4 120 ;             B = Updated offset to opcode from start of instruction
-E2AE             4 121 ;             C = Not specified
-E2AE             4 122 ;             DE HL IX IY I AF' BC' DE' HL' preserved
-E2AE             4 123 DisWrOperand:
-E2AE E6 3F       4 124 and     kDisOpMask                  ; Mask off flag bits
-E2B0 FE 0E       4 125 cp      kDisSubsL+1                 ; Substitution operand string?
-E2B2 30 96       4 126 jr      nc, DisWrString             ; No, so just write string
-E2B4 E5          4 128 push    hl                          ; Store registers
-E2B5 D5          4 129 push    de
-E2B6             4 131 ; Calculate operand table location for this operand and get details
-E2B6 21 11 07    4 132 Realloc_19          ld      hl, DisOperandTable-START-2 ; HL points to DisOperandTable address (-2)
-E2B9 87          4 133 add     a, a                        ; Two bytes per entry
-E2BA 85          4 134 add     a, l                        ; Add to start of table
-E2BB 6F          4 135 ld      l, a                        ; Store updated lo byte
-E2BC 30 01       4 136 jr      nc, NoOverFlo               ; Skip if no overflow
-E2BE 24          4 137 inc     h                           ; Overflow so increment hi byte
-E2BF             4 138 NoOverFlo:
-E2BF 5E          4 139 ld      e, (hl)                     ; Get substitution string number
-E2C0 23          4 140 inc     hl                          ; Point to BIILMM bits
-E2C1 56          4 141 ld      d, (hl)                     ; Get BIILMM function bits
-E2C2 D5          4 143 push    de                          ; So we can use E for scratch reg
-E2C3             4 144 ; Process this operand as detailed in DE, left bracket?
-E2C3 CB 6A       4 145 bit     kDisBrack, d                ; Bracket flagged?
-E2C5 28 05       4 146 jr      z, NoBracL                  ; No, so skip
-E2C7 3E 28       4 147 ld      a, '('                      ; Get left bracket character
-E2C9 CD 37 01    4 148 Realloc_20          call    StrWrChar-START             ; Print left bracket
-E2CC             4 149 NoBracL:
-E2CC             4 150 ; Process this operand as detailed in DE, immediate value?
-E2CC CB 62       4 151 bit     kDisImmed, d                ; Immediate value flagged?
-E2CE 28 1E       4 152 jr      z, NoImmedia                ; No, so skip
-E2D0 3E 24       4 153 ld      a, '$'
-E2D2 CD 37 01    4 154 Realloc_21          call    StrWrChar-START             ; Write '$'
-E2D5 04          4 155 inc     b                           ; Increment offset to lo byte
-E2D6 78          4 156 ld      a, b                        ; Offset to instruction byte
-E2D7 CD 57 03    4 157 Realloc_22          call    DisGetOpcode-START          ; Get lo byte of immediate value
-E2DA 32 34 03    4 158 Realloc_23          ld      (iDisImmed-START+1), a      ; Store lo byte of immediate value
-E2DD 5F          4 159 ld      e, a                        ; Store lo byte of immediate value
-E2DE CB 5A       4 160 bit     kDisWord, d                 ; Immediate value is a word?
-E2E0 28 08       4 161 jr      z, ImmedLo                  ; No, so skip
-E2E2 04          4 162 inc     b                           ; Increment offset to hi byte
-E2E3 78          4 163 ld      a, b                        ; Offset to instruction byte
-E2E4 CD 57 03    4 164 Realloc_24          call    DisGetOpcode-START          ; Get hi byte of immediate value
-E2E7 CD 24 01    4 165 Realloc_25          call    StrWrHexByte-START          ; Print hi byte of immediate value
-E2EA             4 166 ImmedLo:
-E2EA 7B          4 167 ld      a, e                        ; Restore lo byte of immediate value
-E2EB CD 24 01    4 168 Realloc_26          call    StrWrHexByte-START          ; Print lo byte of immediate value
-E2EE             4 169 NoImmedia:
-E2EE             4 170 ; Process this operand as detailed in DE, right bracket?
-E2EE CB 6A       4 171 bit     kDisBrack, d                ; Bracket flagged?
-E2F0 28 05       4 172 jr      z, NoBracR                  ; No, so skip
-E2F2 3E 29       4 173 ld      a, ')'                      ; Get right bracket character
-E2F4 CD 37 01    4 174 Realloc_27          call    StrWrChar-START             ; Print right bracket
-E2F7             4 175 NoBracR:
-E2F7             4 176 ; Process this operand as detailed in DE, substitution string?
-E2F7 D1          4 177 pop     de                          ; Restore details
-E2F8 7B          4 179 ld      a, e                        ; Get substitution string number
-E2F9 B7          4 180 or      a                           ; String specified?
-E2FA 28 66       4 181 jr      z, SubEnd                   ; No, so skip
-E2FC 7A          4 182 ld      a, d                        ; Get BIILMM function bits
-E2FD E6 03       4 183 and     kDisMask                    ; Separate mask type bits
-E2FF 21 2D 07    4 184 Realloc_28          ld      hl, DisMaskTable-START      ; Point to table of mask bits
-E302 85          4 185 add     a, l                        ; Add to start of table
-E303 6F          4 186 ld      l, a                        ; Store updated lo byte
-E304 30 01       4 187 jr      nc, NoOFlow                 ; Skip if no overflow
-E306 24          4 188 inc     h                           ; Overflow so increment hi byte
-E307             4 189 NoOFlow:
-E307 7E          4 190 ld      a, (hl)                     ; Get bit mask
-E308 A1          4 191 and     c                           ; Mask primary opcode
-E309 4F          4 192 ld      c, a                        ; Store masked primary opcode
-E30A 7E          4 193 ld      a, (hl)                     ; Get bit mask
-E30B             4 194 ; Now shift primary opcode (masked) to right the number of
-E30B             4 195 ; times it takes to shift mask byte right before bit 1 is set
-E30B             4 196 SubsShift:
-E30B CB 3F       4 197 srl     a                           ; Shift mask right
-E30D 38 04       4 198 jr      c, DoneShift                ; Bit 1 was set so we're done
-E30F CB 39       4 199 srl     c                           ; Shift primary opcode (masked) right
-E311 18 F8       4 200 jr      SubsShift                   ; Go repeat..
-E313             4 201 DoneShift:
-E313 CB 52       4 202 bit     kDisLength, d               ; Length bit flagged?
-E315 28 02       4 203 jr      z, Single                   ; No, so skip
-E317 CB 21       4 204 sla     c                           ; Double value for two bytes
-E319             4 205 ; C is now the offset into the substitute string
-E319             4 206 Single:
-E319 7B          4 207 ld      a, e                        ; Substitute string number
-E31A 21 74 03    4 208 Realloc_29          ld      hl, DisString-START         ; Start of string list
-E31D CD 66 03    4 209 Realloc_30          call    FindStringInList-START      ; Get start of string (=HL)
-E320 79          4 210 ld      a, c                        ; Offset into string
-E321 85          4 211 add     a, l                        ; Add to start of string
-E322 6F          4 212 ld      l, a                        ; Store updated lo byte
-E323 30 01       4 213 jr      nc, NoOver                  ; Skip if no overflow
-E325 24          4 214 inc     h                           ; Overflow so increment hi byte
-E326             4 215 NoOver:
-E326 7E          4 216 ld      a, (hl)                     ; Get substitute character
-E327 4F          4 217 ld      c, a                        ; Save it for further use
-E328 FE 2A       4 218 cp      '*'                         ; Code for 2 byte HL/IX/IY string
-E32A 3E 18       4 219 ld      a, kDisHL                   ; Set operation string 'HL'
-E32C 28 20       4 220 jr      z, Substitute               ; If 2 byte, go to substitutions
-E32E             4 221 iDisOpcode:
-E32E 3E 00       4 222 ld      a, $00                      ; Get primary opcode
-E330             4 223 ; Check undocumented opcodes related to IXH, IXL, IYH and IYL (by Antonio Luque)
-E330 FE 74       4 224 cp      $74                         ; opcode = "ld (ix/iy +d),h" ?
-E332 28 1F       4 225 jr      z, NotStar                  ; Yes, skip
-E334 FE 75       4 226 cp      $75                         ; opcode = "ld (ix/iy +d),l" ?
-E336 28 1B       4 227 jr      z, NotStar                  ; Yes, skip
-E338 FE 66       4 228 cp      $66                         ; opcode = "ld h,(ix/iy +d)" ?
-E33A 28 17       4 229 jr      z, NotStar                  ; Yes, skip
-E33C FE 6E       4 230 cp      $6E                         ; opcode = "ld l,(ix/iy +d)" ?
-E33E 28 13       4 231 jr      z, NotStar                  ; Yes, skip
-E340 79          4 232 ld      a, c                        ; Retreive substitute character
-E341 FE 48       4 233 cp      'H'                         ; Is it 'H' ?
-E343 3E 6E       4 234 ld      a, kDisH                    ; Set operation string 'H' 
-E345 28 07       4 235 jr      z, Substitute               ; If 'H', go to substitutions
-E347 79          4 236 ld      a, c                        ; Retreive substitute character
-E348 FE 4C       4 237 cp      'L'                         ; Is it 'L' ?
-E34A 3E 71       4 238 ld      a, kDisL                    ; Set operation string 'L' 
-E34C 20 05       4 239 jr      nz, NotStar                 ; If Not 'L', skip
-E34E             4 240 Substitute:
-E34E CD 4A 01    4 241 Realloc_31          call    DisWrString-START           ; Print string with substitutions
-E351 18 0F       4 242 jr      SubEnd                      ; exit
-E353             4 243 NotStar:
-E353 79          4 244 ld      a, c                        ; Retreive substitute character 
-E354 CD 42 01    4 245 Realloc_32          call    DisWrChar-START             ; Print character with filters
-E357 CB 52       4 246 bit     kDisLength, d               ; Length bit flagged?
-E359 28 07       4 247 jr      z, SubEnd                   ; No, so skip
-E35B 23          4 248 inc     hl                          ; Point to second substitute character
-E35C 7E          4 249 ld      a, (hl)                     ; Get substitute character
-E35D FE 2E       4 250 cp      '.'                         ; Do not print '.' character
-E35F C4 42 01    4 251 Realloc_33          call    nz, DisWrChar-START         ; Print character with filters
-E362             4 252 SubEnd:
-E362 D1          4 253 pop     de                          ; Restore registers
-E363 E1          4 254 pop     hl
-E364 C9          4 255 ret
-E365             4 258 ; Disassembler: Write full disassembly to string buffer
-E365             4 259 ;   On entry: HL = Start of instruction to be disassembled
-E365             4 260 ;   On exit:  Address, opcodes and mnemonic in current string buffer
-E365             4 261 ;             iDisIndex variable used
-E365             4 262 ;             A = Length of instruction in bytes
-E365             4 263 ;             HL = Start address of next instruction
-E365             4 264 ;             IY I AF' BC' DE' HL' preserved
-E365             4 265 DisWrInstruction:
-E365 E5          4 266 push    hl                          ; Store start of instruction to be disassembled
-E366             4 268 ; Fill string buffer form address and opcodes with spaces
-E366 06 10       4 269 ld      b, 16                       ; B = buffer length (loop counter)
-E368 13          4 270 inc     de                          ; Move DE to string buffer
-E369             4 271 SpcLoop
-E369 3E 20       4 272 ld      a, ' '                      ; Put a space on the string buffer
-E36B 12          4 273 ld      (de), a
-E36C 13          4 274 inc     de                          ; Move DE to next position of the string buffer
-E36D 10 FA       4 275 djnz    SpcLoop                     ; Loop until fill all buffer positions
-E36F DD 21 E8 04 4 277 Realloc_34          ld      ix, DisInst-START           ; Start of instruction table
-E373 ED 53 39 01 4 278 Realloc_35          ld      (iStrStart-START+1), de     ; Initialise string for mnemonic
-E377 CD 9A 02    4 279 Realloc_36          call    DisWrMnemonic-START         ; Disassembly Mnemonic pointed by HL
-E37A             4 281 ; Add disassembly address and opcodes
-E37A 47          4 282 ld      b, a                        ; B = intruction length (loop counter)
-E37B 11 40 07    4 284 Realloc_37          ld      de, kStrBuffer-START        ; DE points to the string for opcodes
-E37E 2A 39 01    4 285 Realloc_38          ld      hl, (iStrStart-START+1)     ; HL points to last character+1 of string for Nnemonic
-E381 A7          4 286 and     a                           ; Reset carry
-E382 ED 52       4 287 sbc     hl, de                      ; HL = length of total string+1
-E384 7D          4 288 ld      a, l                        ; Get and adjust string length
-E385 3D          4 289 dec     a
-E386 12          4 290 ld      (de), a                     ; Save it at begin of string
-E387 13          4 291 inc     de                          ; Move DE to the first character of the string
-E388 ED 53 39 01 4 292 Realloc_39          ld      (iStrStart-START+1), de     ; Initialise string for opcodes
-E38C E1          4 294 pop     hl                          ; Restore current instruction address
-E38D 54          4 296 ld      d, h                        ; Get start of instruction..
-E38E 5D          4 297 ld      e, l
-E38F CD 13 01    4 298 Realloc_40          call    StrWrAddress-START          ; Write address, colon and space
-E392             4 300 Opcode:
-E392 7E          4 301 ld      a, (hl)                     ; Get instruction opcode
-E393 CD 24 01    4 302 Realloc_41          call    StrWrHexByte-START          ; Write as hex byte
-E396 23          4 303 inc     hl                          ; Point to next byte 
-E397 10 F9       4 304 djnz    Opcode                      ; Loop until all hex bytes written
-E399 C9          4 305 ret
-E39A             4 308 ; Disassembler: Write mnemonic only to string buffer
-E39A             4 309 ;   On entry: HL = Start of instruction to be disassembled
-E39A             4 310 ;   On exit:  Mnemonic is written to current string buffer
-E39A             4 311 ;             iDisIndex variable used
-E39A             4 312 ;             A = Length of instruction in bytes
-E39A             4 313 ;             IY I AF' BC' DE' HL' preserved
-E39A             4 314 DisWrMnemonic:
-E39A F3          4 315 di                                  ; Disable interrupts to prevent use of IY register
-E39B FD E5       4 316 push    iy                          ; Store system variables pointer
-E39D             4 318 ; Prepare to disassemble 
-E39D E5          4 319 push    hl                          ; Copy start address of instruction
-E39E FD E1       4 320 pop     iy                          ;  to IY
-E3A0 AF          4 322 xor     a
-E3A1 21 5D 01    4 323 Realloc_42          ld      hl, iDisIndex-START+1       ; Clear index instruction opcode
-E3A4 77          4 324 ld      (hl), a
-E3A5 47          4 325 ld      b, a                        ; Offset to instruction's primary opcode
-E3A6 5F          4 326 ld      e, a                        ; Clear prefix for extended instructions
-E3A7 FD 7E 00    4 327 ld      a, (iy+0)                   ; Instruction's primary opcode 
-E3AA             4 329 ; Check for index register instruction (IX or IY)
-E3AA FE DD       4 330 cp      $DD                         ; IX instruction?
-E3AC 28 04       4 331 jr      z, Index                    ; Yes, so skip
-E3AE FE FD       4 332 cp      $FD                         ; IY instruction?
-E3B0 20 05       4 333 jr      nz, NotIndex                ; No, so skip
-E3B2             4 334 Index:
-E3B2 77          4 335 ld      (hl), a                     ; Store index instruction opcode
-E3B3 04          4 336 inc     b                           ; Increment offset to primary opcode
-E3B4 FD 7E 01    4 337 ld      a, (iy+1)                   ; Get next opcode byte
-E3B7             4 338 NotIndex:
-E3B7             4 339 ; Check for extended instruction
-E3B7 FE CB       4 340 cp      $CB                         ; Extended instruction?
-E3B9 28 04       4 341 jr      z, Extend                   ; Yes, so skip
-E3BB FE ED       4 342 cp      $ED                         ; Extended instruction?
-E3BD 20 0B       4 343 jr      nz, NotExtend               ; No, so skip
-E3BF             4 344 Extend:
-E3BF 5F          4 345 ld      e, a                        ; Store prefix for extended instructions
-E3C0 04          4 346 inc     b                           ; Increment offset to primary opcode
-E3C1 7E          4 347 ld      a, (hl)                     ; Get index instruction opcode
-E3C2 B7          4 348 or      a                           ; Is this an index instruction?
-E3C3 78          4 349 ld      a, b                        ; Prepare to read primary opcode
-E3C4 28 01       4 350 jr      z, ExNoIndx                 ; No, so skip
-E3C6 3C          4 351 inc     a                           ; Yes, skip index displacement byte
-E3C7             4 352 ExNoIndx:
-E3C7 CD 57 03    4 353 Realloc_43          call    DisGetOpcode-START
-E3CA             4 354 NotExtend:
-E3CA 57          4 355 ld      d, a                        ; Remember instruction's primary opcode
-E3CB 32 2F 02    4 356 Realloc_44          ld      (iDisOpcode-START+1), a     ; Store primary opcode
-E3CE             4 358 ; Locate instruction table entry for current instruction
-E3CE             4 359 ; BASIC: (i And iMask(n)) = (iValue(n) And iMask(n)) ?
-E3CE             4 360 Table:
-E3CE DD 7E 00    4 361 ld      a, (ix+0)                   ; Get opcode value from table
-E3D1 DD A6 01    4 362 and     (ix+1)                      ; AND with opcode mask from table
-E3D4 4F          4 363 ld      c, a                        ; Store Value AND Mask
-E3D5 DD 7E 01    4 364 ld      a, (ix+1)                   ; Get opcode mask from table
-E3D8 A2          4 365 and     d                           ; AND with instruction being disassembled
-E3D9 B9          4 366 cp      c                           ; Is this the correct table entry?
-E3DA 20 14       4 367 jr      nz, NotFound                ; No, so this is not the correct table
-E3DC             4 368 ; BASIC: ... AND (p = iPrecode(n)) ?
-E3DC AF          4 369 xor     a                           ; Default precode for comparison = 0x00
-E3DD DD CB 03 7E 4 370 bit     7, (ix+3)                   ; Precode (index or extended)?
-E3E1 28 0A       4 371 jr      z, GotPrCode                ; No, so skip
-E3E3 3E CB       4 372 ld      a, $CB                      ; Default precode for comparison = 0xCB
-E3E5 DD CB 03 76 4 373 bit     6, (ix+3)                   ; Precode = 0xED?
-E3E9 28 02       4 374 jr      z, GotPrCode                ; No, so skip
-E3EB 3E ED       4 375 ld      a, $ED                      ; Yes, so precode for comparison = 0xED
-E3ED             4 376 GotPrCode:
-E3ED BB          4 377 cp      e                           ; Compare table precode with instruction
-E3EE 28 09       4 378 jr      z, Found                    ; Yes, so this is the correct table
-E3F0             4 379 NotFound:
-E3F0 C5          4 380 push    bc                          ; Preserve BC
-E3F1 01 05 00    4 381 ld      bc, 5                       ; No, so try next table entry
-E3F4 DD 09       4 382 add     ix, bc                      ; Point to next table entry
-E3F6 C1          4 383 pop     bc                          ; Restore BC
-E3F7 18 D5       4 384 jr      Table
-E3F9             4 386 ; We now have the correct instruction table entry (pointer to by IX)
-E3F9             4 387 ; BASIC: (p = iPrecode(n)) And (i And iMask(n)) = (iValue(n) And iMask(n))
-E3F9             4 388 Found:
-E3F9 DD 7E 02    4 389 ld      a, (ix+2)                   ; Get operation string number
-E3FC 21 78 01    4 390 Realloc_45          ld      hl, iDisOpStr-START+1       ; Store operation string number
-E3FF 77          4 391 ld      (hl), a
-E400 CD 4A 01    4 392 Realloc_46          call    DisWrString-START           ; Write operation string
-E403 3E 20       4 394 ld      a, ' '                      ; Write space
-E405 CD 37 01    4 395 Realloc_47          call    StrWrChar-START
-E408             4 397 ; BASIC: Operand sString(iOperand1(n)), t
-E408 DD 7E 03    4 398 ld      a, (ix+3)                   ; Get operand #1 string number
-E40B 4A          4 399 ld      c, d                        ; Get primary opcode value
-E40C CD AE 01    4 400 Realloc_48          call    DisWrOperand-START
-E40F             4 402 ; BASIC: Operand sString(iOperand2(n)), t
-E40F DD 7E 04    4 403 ld      a, (ix+4)                   ; Get operand #2 string number
-E412 3D          4 404 dec     a                           ; Is is 1? (null string)
-E413 28 0C       4 405 jr      z, NoOp2                    ; Yes, so skip this operand
-E415 3E 2C       4 407 ld      a, ','                      ; Get comma character
-E417 CD 37 01    4 408 Realloc_49          call    StrWrChar-START             ; Write comma to string
-E41A DD 7E 04    4 410 ld      a, (ix+4)                   ; Get operand #2 string number
-E41D 4A          4 411 ld      c, d                        ; Get primary opcode value
-E41E CD AE 01    4 412 Realloc_50          call    DisWrOperand-START
-E421             4 413 NoOp2:
-E421             4 414 ; If relative jump show absolute address in brackets
-E421 7E          4 415 ld      a, (hl)                     ; Get operation string number
-E422 FE 1B       4 416 cp      kDisJR                      ; JR instruction?
-E424 28 04       4 417 jr      z, Rel                      ; Yes, so skip
-E426 FE 1C       4 418 cp      kDisDJNZ                    ; DJNZ instruction?
-E428 20 22       4 419 jr      nz, NotRel                  ; No so skip
-E42A             4 420 Rel:
-E42A 2A 39 01    4 421 Realloc_51          ld      hl, (iStrStart+1-START)     ; An ugly way to only show absolute address
-E42D 2B          4 422 dec     hl                          ;  (by Antonio Luque)
-E42E 2B          4 423 dec     hl
-E42F 2B          4 424 dec     hl
-E430 22 39 01    4 425 Realloc_52          ld      (iStrStart-START+1), hl
-E433             4 426 iDisImmed:
-E433 3E 00       4 427 ld      a, $00                      ; Get immediate value from instruction
-E435 5F          4 428 ld      e, a                        ; Get displacement lo (signed byte)
-E436 16 00       4 429 ld      d, 0                        ; Default to hi byte = zero
-E438 17          4 430 rla                                 ; Displacement negative?
-E439 30 01       4 431 jr      nc, JRadd                   ; No, so skip
-E43B 15          4 432 dec     d                           ; Yes, so set hi byte to 0xFF
-E43C             4 433 JRadd:
-E43C FD E5       4 434 push    iy                          ; Push address of instruction
-E43E E1          4 435 pop     hl                          ; POP address of instruction
-E43F 23          4 436 inc     hl                          ; Increment to
-E440 23          4 437 inc     hl                          ;  end of the JR/DJNZ instruction
-E441 19          4 438 add     hl, de                      ; Add signed 16-bit displacement
-E442 54          4 439 ld      d, h                        ; Get destination address hi byte
-E443 5D          4 440 ld      e, l                        ; Get destination address lo byte
-E444 3E 24       4 442 ld      a, '$'
-E446 CD 37 01    4 443 Realloc_53          call    StrWrChar-START             ; Write '$'
-E449 CD 1F 01    4 444 Realloc_54          call    StrWrHexWord-START          ; Write hex word to string
-E44C             4 446 NotRel:
-E44C             4 447 ; Finish building mnemonic string
-E44C 3E 0D       4 448 ld      a, CHR_ENTER
-E44E CD 37 01    4 449 Realloc_55          call    StrWrChar-START
-E451 78          4 451 ld      a, b                        ; Get offset into instruction
-E452 3C          4 452 inc     a                           ; Increment to give instruction length
-E453 FD E1       4 454 pop     iy                          ; Restore system variables pointer
-E455 FB          4 455 ei                                  ; Enable interrupts
-E456 C9          4 456 ret
-E457             4 459 ; Disassembler: Get instruction opcode
-E457             4 460 ;   On entry: A = Offset from start of instruction
-E457             4 461 ;             IY = Start of instruction
-E457             4 462 ;   On exit:  A = Opcode
-E457             4 463 ;             BC DE HL IX IY I AF' BC' DE' HL' preserved
-E457             4 464 DisGetOpcode:
-E457 C5          4 465 push    bc                          ; Store registers
-E458 FD E5       4 466 push    iy
-E45A 4F          4 467 ld      c, a                        ; Offset from start of instruction
-E45B 06 00       4 468 ld      b, 0                        ; Clear hi byte ready for addition
-E45D FD 09       4 469 add     iy, bc                      ; Calculate location of opcode
-E45F FD 7E 00    4 470 ld      a, (iy+0)                   ; Get opcode from memory
-E462 FD E1       4 471 pop     iy                          ; Restore registers
-E464 C1          4 472 pop     bc
-E465 C9          4 473 ret
-E466             4 475 ; Disassembler: How it works...
-E466             4 476 ; Solution is to use data table to define functions for each operand (see below)
-E466             4 477 ; Decoding table: where the table entry is determined by the operand string number
-E466             4 478 ; String numbers 0 to 12:
-E466             4 479 ;   If bracket flagged print "("
-E466             4 480 ;   If immediate byte flagged print hex byte at PC+Offset+1, Offset += 1
-E466             4 481 ;   If immediate word flagged print word byte at PC+Offset+1 and PC+Offset+2, Offset += 2
-E466             4 482 ;   If bracket flagged print ")"
-E466             4 483 ;   If substitution string specified: (non-zero value)
-E466             4 484 ;     n = opcode and SubsMask
-E466             4 485 ;     n = n >> x, where x is the number of right shifts of the mask til bit 0 is a 1
-E466             4 486 ;     If subsLen is 2 then n = n << 1
-E466             4 487 ;     c =  character at (start of Substitution String + n + 0)
-E466             4 488 ;     if = "-" then print "(HL)" else print character c
-E466             4 489 ;     If SubsLen = 2 then
-E466             4 490 ;       print character at (start of Substitution String + n + 1)
-E466             4 491 ;     Endif
-E466             4 492 ;   End if
+E23C             4 1 ; **********************************************************************************************************************
+E23C             4 2 ; **  Disassembler support                                                                      by Stephen C Cousins  **
+E23C             4 3 ; **                                                                                                                  **
+E23C             4 4 ; **  Adapted for ZX Spectrum disASM                                                                by Antonio Luque  **
+E23C             4 5 ; **********************************************************************************************************************
+E23C             4 8 kDisBrack:          EQU     5                           ; Bracket flag
+E23C             4 9 kDisImmed:          EQU     4                           ; Immediate value flag
+E23C             4 10 kDisWord:           EQU     3                           ; Immediate value is word (not byte) flag
+E23C             4 11 kDisLength:         EQU     2                           ; Substite two characters (not one) flag
+E23C             4 12 kDisMask:           EQU     3                           ; Mask type 0=0x07,1=0x18,2=0x30,3=0x38
+E23C             4 14 ; Control characters
+E23C             4 15 CHR_ENTER           EQU     $0D
+E23C             4 18 ; Disassembler: Write character to string buffer
+E23C             4 19 ;   On entry: A = Character to write
+E23C             4 20 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
+E23C             4 21 ; This version of write character removes bit 7 (the new string flag)
+E23C             4 22 ; and replaces "-" with "(HL)"
+E23C             4 23 DisWrChar:
+E23C E6 7F       4 24 and     %01111111                   ; Mask off bit 7 (string start bit)
+E23E FE 2D       4 25 cp      '-'                         ; Code for "(HL)" ?
+E240 20 EF       4 26 jr      nz, StrWrChar               ; No, print character
+E242 3E 15       4 28 ld      a, kDisBracHL               ; String number for "(HL)"
+E244             4 29 ; Write disassembler string
+E244             4 30 ;   On entry: A = Disassembler data string number
+E244             4 31 ;             B = Offset to current opcode from start of instruction
+E244             4 32 ;             IY = Start address for current instruction
+E244             4 33 ;   On exit:  C DE HL IX IY I AF' BC' DE' HL' preserved
+E244             4 34 ;             B is incremented if (IX/IY+d) is substituted
+E244             4 35 ; This version of write string removes bit 7 (the new string flag)
+E244             4 36 ; If iDisTmp1 (the current index instruction opcode) is 0xDD or 0xFD, 
+E244             4 37 ; is not zero then strings are replaced: 
+E244             4 38 ;   HL is replaced with IX or IY
+E244             4 39 ;   (HL) is replaced with (IX + d) or (IY + d) except for JP instruction
+E244             4 40 ;   where is is just replaced by (IX) or (IY)
+E244             4 41 DisWrString:
+E244 E5          4 42 push    hl                          ; Store HL register
+E245 6F          4 44 ld      l, a                        ; Store string number
+E246 FE 6E       4 45 cp      kDisH                       ; String = H ?
+E248 28 0C       4 46 jr      z, Subs                     ; Yes, so go do substitution
+E24A FE 71       4 47 cp      kDisL                       ; String = L ?
+E24C 28 08       4 48 jr      z, Subs                     ; Yes, so go do substitution
+E24E FE 15       4 49 cp      kDisBracHL                  ; String = (HL) ?
+E250 28 04       4 50 jr      z, Subs                     ; Yes, so go do substitution
+E252 FE 18       4 51 cp      kDisHL                      ; String = HL ?
+E254 20 0B       4 52 jr      nz, GotString               ; No, so just write the string
+E256             4 53 ; Substitute IX/IY in HL string or (IX/IY+d) in (HL) string
+E256             4 54 Subs:
+E256             4 55 iDisIndex:
+E256 3E 00       4 56 ld      a, $00                      ; Get index instruction opcode
+E258 B7          4 57 or      a                           ; Index instruction?
+E259 28 06       4 58 jr      z, GotString                ; No, so skip substitutions
+E25B 2C          4 59 inc     l                           ; Increment to IX string number
+E25C FE DD       4 60 cp      $DD                         ; IX instruction?
+E25E 28 01       4 61 jr      z, GotString                ; Yes, so go write it
+E260 2C          4 62 inc     l                           ; Increment to IY string
+E261             4 63 GotString:
+E261 7D          4 64 ld      a, l                        ; Get string number
+E262 CD 60 03    4 65 Realloc_12          call    FindStringInList-START      ; Find start of string A
+E265             4 66 ; HL now points to disassembler string
+E265             4 67 Char:
+E265 7E          4 68 ld      a, (hl)                     ; Get character from string
+E266 E6 7F       4 69 and     %01111111                   ; Mask off string start bit
+E268 FE 2B       4 70 cp      '+'                         ; Is it a '+' sign (displacement) ?
+E26A 28 05       4 71 jr      z, Plus                     ; No, so skip to next character
+E26C CD 31 01    4 72 Realloc_13          call    StrWrChar-START             ; Write character
+E26F 18 30       4 73 jr      Next                        ; No, so skip to next character
+E271             4 74 ; Encountered a plus sign so expecting to show a displacement
+E271             4 75 Plus:
+E271             4 76 iDisOpStr:
+E271 3E 00       4 77 ld      a, $00                      ; Get instruction string
+E273 FE 1E       4 78 cp      kDisJP                      ; JP instruction?
+E275 20 07       4 79 jr      nz, Displace                ; No, so go show displacement
+E277 3E 29       4 80 ld      a, ')'                      ; Yes, so just terminate with ')'
+E279 CD 31 01    4 81 Realloc_14          call    StrWrChar-START             ; Write close bracket character
+E27C 18 28       4 82 jr      Exit
+E27E             4 83 ; Show displacement in (IX+...) and (IY+...) instructions
+E27E             4 84 Displace:
+E27E FD 7E 02    4 85 ld      a, (iy+2)                   ; Get index instruction displacement
+E281 FE 80       4 86 cp      $80                         ; Is it signed?
+E283 30 05       4 87 jr      nc, Signed                  ; Yes, negate index instruction displacement
+E285 08          4 88 ex      af, af'                     ; Store unsigned index instruction displacement
+E286 3E 2B       4 89 ld      a, '+'                      ; set '+' for unsigned
+E288 18 05       4 90 jr      Convert
+E28A             4 91 Signed:
+E28A ED 44       4 92 neg                                 ; Negate index instruction displacement
+E28C 08          4 93 ex      af, af'                     ; Store signed index instruction displacement
+E28D 3E 2D       4 94 ld      a, '-'                      ; set '-' for signed
+E28F             4 95 Convert:
+E28F CD 31 01    4 96 Realloc_15          call    StrWrChar-START             ; Write plus or minus
+E292 3E 24       4 97 ld      a, '$'                      ; Write '$'
+E294 CD 31 01    4 98 Realloc_16          call    StrWrChar-START
+E297 08          4 99 ex      af, af'                     ; Restore index instruction displacement
+E298 CD 1E 01    4 100 Realloc_17          call    StrWrHexByte-START          ; Write index instruction displacement
+E29B 3E 29       4 101 ld      a, ')'
+E29D CD 31 01    4 102 Realloc_18          call    StrWrChar-START             ; Write close bracket character
+E2A0 04          4 103 inc     b                           ; Increment opcode offset
+E2A1             4 104 ; Consider next character in disassembler string
+E2A1             4 105 Next:
+E2A1 23          4 106 inc     hl                          ; Point to next character
+E2A2 CB 7E       4 107 bit     7, (hl)                     ; Start of new string?
+E2A4 28 BF       4 108 jr      z, Char                     ; No, so go get next character
+E2A6             4 109 Exit:
+E2A6 E1          4 110 pop     hl                          ; Restore HL register
+E2A7 C9          4 111 ret
+E2A8             4 114 ; Disassembler: Write operand to buffer
+E2A8             4 115 ;   On entry: A = Operand string number
+E2A8             4 116 ;             B = Offset to opcode from start of instruction
+E2A8             4 117 ;             C = Primary op-code
+E2A8             4 118 ;             IY = Start address of instruction
+E2A8             4 119 ;   On exit:  A = Unspecified
+E2A8             4 120 ;             B = Updated offset to opcode from start of instruction
+E2A8             4 121 ;             C = Not specified
+E2A8             4 122 ;             DE HL IX IY I AF' BC' DE' HL' preserved
+E2A8             4 123 DisWrOperand:
+E2A8 E6 3F       4 124 and     kDisOpMask                  ; Mask off flag bits
+E2AA FE 0E       4 125 cp      kDisSubsL+1                 ; Substitution operand string?
+E2AC 30 96       4 126 jr      nc, DisWrString             ; No, so just write string
+E2AE E5          4 128 push    hl                          ; Store registers
+E2AF D5          4 129 push    de
+E2B0             4 131 ; Calculate operand table location for this operand and get details
+E2B0 21 0B 07    4 132 Realloc_19          ld      hl, DisOperandTable-START-2 ; HL points to DisOperandTable address (-2)
+E2B3 87          4 133 add     a, a                        ; Two bytes per entry
+E2B4 85          4 134 add     a, l                        ; Add to start of table
+E2B5 6F          4 135 ld      l, a                        ; Store updated lo byte
+E2B6 30 01       4 136 jr      nc, NoOverFlo               ; Skip if no overflow
+E2B8 24          4 137 inc     h                           ; Overflow so increment hi byte
+E2B9             4 138 NoOverFlo:
+E2B9 5E          4 139 ld      e, (hl)                     ; Get substitution string number
+E2BA 23          4 140 inc     hl                          ; Point to BIILMM bits
+E2BB 56          4 141 ld      d, (hl)                     ; Get BIILMM function bits
+E2BC D5          4 143 push    de                          ; So we can use E for scratch reg
+E2BD             4 144 ; Process this operand as detailed in DE, left bracket?
+E2BD CB 6A       4 145 bit     kDisBrack, d                ; Bracket flagged?
+E2BF 28 05       4 146 jr      z, NoBracL                  ; No, so skip
+E2C1 3E 28       4 147 ld      a, '('                      ; Get left bracket character
+E2C3 CD 31 01    4 148 Realloc_20          call    StrWrChar-START             ; Print left bracket
+E2C6             4 149 NoBracL:
+E2C6             4 150 ; Process this operand as detailed in DE, immediate value?
+E2C6 CB 62       4 151 bit     kDisImmed, d                ; Immediate value flagged?
+E2C8 28 1E       4 152 jr      z, NoImmedia                ; No, so skip
+E2CA 3E 24       4 153 ld      a, '$'
+E2CC CD 31 01    4 154 Realloc_21          call    StrWrChar-START             ; Write '$'
+E2CF 04          4 155 inc     b                           ; Increment offset to lo byte
+E2D0 78          4 156 ld      a, b                        ; Offset to instruction byte
+E2D1 CD 51 03    4 157 Realloc_22          call    DisGetOpcode-START          ; Get lo byte of immediate value
+E2D4 32 2E 03    4 158 Realloc_23          ld      (iDisImmed-START+1), a      ; Store lo byte of immediate value
+E2D7 5F          4 159 ld      e, a                        ; Store lo byte of immediate value
+E2D8 CB 5A       4 160 bit     kDisWord, d                 ; Immediate value is a word?
+E2DA 28 08       4 161 jr      z, ImmedLo                  ; No, so skip
+E2DC 04          4 162 inc     b                           ; Increment offset to hi byte
+E2DD 78          4 163 ld      a, b                        ; Offset to instruction byte
+E2DE CD 51 03    4 164 Realloc_24          call    DisGetOpcode-START          ; Get hi byte of immediate value
+E2E1 CD 1E 01    4 165 Realloc_25          call    StrWrHexByte-START          ; Print hi byte of immediate value
+E2E4             4 166 ImmedLo:
+E2E4 7B          4 167 ld      a, e                        ; Restore lo byte of immediate value
+E2E5 CD 1E 01    4 168 Realloc_26          call    StrWrHexByte-START          ; Print lo byte of immediate value
+E2E8             4 169 NoImmedia:
+E2E8             4 170 ; Process this operand as detailed in DE, right bracket?
+E2E8 CB 6A       4 171 bit     kDisBrack, d                ; Bracket flagged?
+E2EA 28 05       4 172 jr      z, NoBracR                  ; No, so skip
+E2EC 3E 29       4 173 ld      a, ')'                      ; Get right bracket character
+E2EE CD 31 01    4 174 Realloc_27          call    StrWrChar-START             ; Print right bracket
+E2F1             4 175 NoBracR:
+E2F1             4 176 ; Process this operand as detailed in DE, substitution string?
+E2F1 D1          4 177 pop     de                          ; Restore details
+E2F2 7B          4 179 ld      a, e                        ; Get substitution string number
+E2F3 B7          4 180 or      a                           ; String specified?
+E2F4 28 66       4 181 jr      z, SubEnd                   ; No, so skip
+E2F6 7A          4 182 ld      a, d                        ; Get BIILMM function bits
+E2F7 E6 03       4 183 and     kDisMask                    ; Separate mask type bits
+E2F9 21 27 07    4 184 Realloc_28          ld      hl, DisMaskTable-START      ; Point to table of mask bits
+E2FC 85          4 185 add     a, l                        ; Add to start of table
+E2FD 6F          4 186 ld      l, a                        ; Store updated lo byte
+E2FE 30 01       4 187 jr      nc, NoOFlow                 ; Skip if no overflow
+E300 24          4 188 inc     h                           ; Overflow so increment hi byte
+E301             4 189 NoOFlow:
+E301 7E          4 190 ld      a, (hl)                     ; Get bit mask
+E302 A1          4 191 and     c                           ; Mask primary opcode
+E303 4F          4 192 ld      c, a                        ; Store masked primary opcode
+E304 7E          4 193 ld      a, (hl)                     ; Get bit mask
+E305             4 194 ; Now shift primary opcode (masked) to right the number of
+E305             4 195 ; times it takes to shift mask byte right before bit 1 is set
+E305             4 196 SubsShift:
+E305 CB 3F       4 197 srl     a                           ; Shift mask right
+E307 38 04       4 198 jr      c, DoneShift                ; Bit 1 was set so we're done
+E309 CB 39       4 199 srl     c                           ; Shift primary opcode (masked) right
+E30B 18 F8       4 200 jr      SubsShift                   ; Go repeat..
+E30D             4 201 DoneShift:
+E30D CB 52       4 202 bit     kDisLength, d               ; Length bit flagged?
+E30F 28 02       4 203 jr      z, Single                   ; No, so skip
+E311 CB 21       4 204 sla     c                           ; Double value for two bytes
+E313             4 205 ; C is now the offset into the substitute string
+E313             4 206 Single:
+E313 7B          4 207 ld      a, e                        ; Substitute string number
+E314 21 6E 03    4 208 Realloc_29          ld      hl, DisString-START         ; Start of string list
+E317 CD 60 03    4 209 Realloc_30          call    FindStringInList-START      ; Get start of string (=HL)
+E31A 79          4 210 ld      a, c                        ; Offset into string
+E31B 85          4 211 add     a, l                        ; Add to start of string
+E31C 6F          4 212 ld      l, a                        ; Store updated lo byte
+E31D 30 01       4 213 jr      nc, NoOver                  ; Skip if no overflow
+E31F 24          4 214 inc     h                           ; Overflow so increment hi byte
+E320             4 215 NoOver:
+E320 7E          4 216 ld      a, (hl)                     ; Get substitute character
+E321 4F          4 217 ld      c, a                        ; Save it for further use
+E322 FE 2A       4 218 cp      '*'                         ; Code for 2 byte HL/IX/IY string
+E324 3E 18       4 219 ld      a, kDisHL                   ; Set operation string 'HL'
+E326 28 20       4 220 jr      z, Substitute               ; If 2 byte, go to substitutions
+E328             4 221 iDisOpcode:
+E328 3E 00       4 222 ld      a, $00                      ; Get primary opcode
+E32A             4 223 ; Check undocumented opcodes related to IXH, IXL, IYH and IYL (by Antonio Luque)
+E32A FE 74       4 224 cp      $74                         ; opcode = "ld (ix/iy +d),h" ?
+E32C 28 1F       4 225 jr      z, NotStar                  ; Yes, skip
+E32E FE 75       4 226 cp      $75                         ; opcode = "ld (ix/iy +d),l" ?
+E330 28 1B       4 227 jr      z, NotStar                  ; Yes, skip
+E332 FE 66       4 228 cp      $66                         ; opcode = "ld h,(ix/iy +d)" ?
+E334 28 17       4 229 jr      z, NotStar                  ; Yes, skip
+E336 FE 6E       4 230 cp      $6E                         ; opcode = "ld l,(ix/iy +d)" ?
+E338 28 13       4 231 jr      z, NotStar                  ; Yes, skip
+E33A 79          4 232 ld      a, c                        ; Retreive substitute character
+E33B FE 48       4 233 cp      'H'                         ; Is it 'H' ?
+E33D 3E 6E       4 234 ld      a, kDisH                    ; Set operation string 'H' 
+E33F 28 07       4 235 jr      z, Substitute               ; If 'H', go to substitutions
+E341 79          4 236 ld      a, c                        ; Retreive substitute character
+E342 FE 4C       4 237 cp      'L'                         ; Is it 'L' ?
+E344 3E 71       4 238 ld      a, kDisL                    ; Set operation string 'L' 
+E346 20 05       4 239 jr      nz, NotStar                 ; If Not 'L', skip
+E348             4 240 Substitute:
+E348 CD 44 01    4 241 Realloc_31          call    DisWrString-START           ; Print string with substitutions
+E34B 18 0F       4 242 jr      SubEnd                      ; exit
+E34D             4 243 NotStar:
+E34D 79          4 244 ld      a, c                        ; Retreive substitute character 
+E34E CD 3C 01    4 245 Realloc_32          call    DisWrChar-START             ; Print character with filters
+E351 CB 52       4 246 bit     kDisLength, d               ; Length bit flagged?
+E353 28 07       4 247 jr      z, SubEnd                   ; No, so skip
+E355 23          4 248 inc     hl                          ; Point to second substitute character
+E356 7E          4 249 ld      a, (hl)                     ; Get substitute character
+E357 FE 2E       4 250 cp      '.'                         ; Do not print '.' character
+E359 C4 3C 01    4 251 Realloc_33          call    nz, DisWrChar-START         ; Print character with filters
+E35C             4 252 SubEnd:
+E35C D1          4 253 pop     de                          ; Restore registers
+E35D E1          4 254 pop     hl
+E35E C9          4 255 ret
+E35F             4 258 ; Disassembler: Write full disassembly to string buffer
+E35F             4 259 ;   On entry: HL = Start of instruction to be disassembled
+E35F             4 260 ;             DE = String buffer address
+E35F             4 261 ;   On exit:  Address, opcodes and mnemonic in current string buffer
+E35F             4 262 ;             iDisIndex variable used
+E35F             4 263 ;             A = Length of instruction in bytes
+E35F             4 264 ;             HL = Start address of next instruction
+E35F             4 265 ;             IY I AF' BC' DE' HL' preserved
+E35F             4 266 DisWrInstruction:
+E35F E5          4 267 push    hl                          ; Store start of instruction to be disassembled
+E360             4 269 ; Fill string buffer form address and opcodes with spaces
+E360 06 10       4 270 ld      b, 16                       ; B = buffer length (loop counter)
+E362 13          4 271 inc     de                          ; Move DE to string buffer
+E363             4 272 SpcLoop
+E363 3E 20       4 273 ld      a, ' '                      ; Put a space on the string buffer
+E365 12          4 274 ld      (de), a
+E366 13          4 275 inc     de                          ; Move DE to next position of the string buffer
+E367 10 FA       4 276 djnz    SpcLoop                     ; Loop until fill all buffer positions
+E369 DD 21 E2 04 4 278 Realloc_34          ld      ix, DisInst-START           ; Start of instruction table
+E36D ED 53 33 01 4 279 Realloc_35          ld      (iStrStart-START+1), de     ; Initialise string for mnemonic
+E371 CD 94 02    4 280 Realloc_36          call    DisWrMnemonic-START         ; Disassembly Mnemonic pointed by HL
+E374             4 282 ; Add disassembly address and opcodes
+E374 47          4 283 ld      b, a                        ; B = intruction length (loop counter)
+E375 11 3A 07    4 285 Realloc_37          ld      de, kStrBuffer-START        ; DE points to the string for opcodes
+E378 2A 33 01    4 286 Realloc_38          ld      hl, (iStrStart-START+1)     ; HL points to last character+1 of string for Nnemonic
+E37B A7          4 287 and     a                           ; Reset carry
+E37C ED 52       4 288 sbc     hl, de                      ; HL = length of total string+1
+E37E 7D          4 289 ld      a, l                        ; Get and adjust string length
+E37F 3D          4 290 dec     a
+E380 12          4 291 ld      (de), a                     ; Save it at begin of string
+E381 13          4 292 inc     de                          ; Move DE to the first character of the string
+E382 ED 53 33 01 4 293 Realloc_39          ld      (iStrStart-START+1), de     ; Initialise string for opcodes
+E386 E1          4 295 pop     hl                          ; Restore current instruction address
+E387 54          4 297 ld      d, h                        ; Get start of instruction..
+E388 5D          4 298 ld      e, l
+E389 CD 0D 01    4 299 Realloc_40          call    StrWrAddress-START          ; Write address, colon and space
+E38C             4 301 Opcode:
+E38C 7E          4 302 ld      a, (hl)                     ; Get instruction opcode
+E38D CD 1E 01    4 303 Realloc_41          call    StrWrHexByte-START          ; Write as hex byte
+E390 23          4 304 inc     hl                          ; Point to next byte 
+E391 10 F9       4 305 djnz    Opcode                      ; Loop until all hex bytes written
+E393 C9          4 306 ret
+E394             4 309 ; Disassembler: Write mnemonic only to string buffer
+E394             4 310 ;   On entry: HL = Start of instruction to be disassembled
+E394             4 311 ;   On exit:  Mnemonic is written to current string buffer
+E394             4 312 ;             iDisIndex variable used
+E394             4 313 ;             A = Length of instruction in bytes
+E394             4 314 ;             IY I AF' BC' DE' HL' preserved
+E394             4 315 DisWrMnemonic:
+E394 F3          4 316 di                                  ; Disable interrupts to prevent use of IY register
+E395 FD E5       4 317 push    iy                          ; Store system variables pointer
+E397             4 319 ; Prepare to disassemble 
+E397 E5          4 320 push    hl                          ; Copy start address of instruction
+E398 FD E1       4 321 pop     iy                          ;  to IY
+E39A AF          4 323 xor     a
+E39B 21 57 01    4 324 Realloc_42          ld      hl, iDisIndex-START+1       ; Clear index instruction opcode
+E39E 77          4 325 ld      (hl), a
+E39F 47          4 326 ld      b, a                        ; Offset to instruction's primary opcode
+E3A0 5F          4 327 ld      e, a                        ; Clear prefix for extended instructions
+E3A1 FD 7E 00    4 328 ld      a, (iy+0)                   ; Instruction's primary opcode 
+E3A4             4 330 ; Check for index register instruction (IX or IY)
+E3A4 FE DD       4 331 cp      $DD                         ; IX instruction?
+E3A6 28 04       4 332 jr      z, Index                    ; Yes, so skip
+E3A8 FE FD       4 333 cp      $FD                         ; IY instruction?
+E3AA 20 05       4 334 jr      nz, NotIndex                ; No, so skip
+E3AC             4 335 Index:
+E3AC 77          4 336 ld      (hl), a                     ; Store index instruction opcode
+E3AD 04          4 337 inc     b                           ; Increment offset to primary opcode
+E3AE FD 7E 01    4 338 ld      a, (iy+1)                   ; Get next opcode byte
+E3B1             4 339 NotIndex:
+E3B1             4 340 ; Check for extended instruction
+E3B1 FE CB       4 341 cp      $CB                         ; Extended instruction?
+E3B3 28 04       4 342 jr      z, Extend                   ; Yes, so skip
+E3B5 FE ED       4 343 cp      $ED                         ; Extended instruction?
+E3B7 20 0B       4 344 jr      nz, NotExtend               ; No, so skip
+E3B9             4 345 Extend:
+E3B9 5F          4 346 ld      e, a                        ; Store prefix for extended instructions
+E3BA 04          4 347 inc     b                           ; Increment offset to primary opcode
+E3BB 7E          4 348 ld      a, (hl)                     ; Get index instruction opcode
+E3BC B7          4 349 or      a                           ; Is this an index instruction?
+E3BD 78          4 350 ld      a, b                        ; Prepare to read primary opcode
+E3BE 28 01       4 351 jr      z, ExNoIndx                 ; No, so skip
+E3C0 3C          4 352 inc     a                           ; Yes, skip index displacement byte
+E3C1             4 353 ExNoIndx:
+E3C1 CD 51 03    4 354 Realloc_43          call    DisGetOpcode-START
+E3C4             4 355 NotExtend:
+E3C4 57          4 356 ld      d, a                        ; Remember instruction's primary opcode
+E3C5 32 29 02    4 357 Realloc_44          ld      (iDisOpcode-START+1), a     ; Store primary opcode
+E3C8             4 359 ; Locate instruction table entry for current instruction
+E3C8             4 360 ; BASIC: (i And iMask(n)) = (iValue(n) And iMask(n)) ?
+E3C8             4 361 Table:
+E3C8 DD 7E 00    4 362 ld      a, (ix+0)                   ; Get opcode value from table
+E3CB DD A6 01    4 363 and     (ix+1)                      ; AND with opcode mask from table
+E3CE 4F          4 364 ld      c, a                        ; Store Value AND Mask
+E3CF DD 7E 01    4 365 ld      a, (ix+1)                   ; Get opcode mask from table
+E3D2 A2          4 366 and     d                           ; AND with instruction being disassembled
+E3D3 B9          4 367 cp      c                           ; Is this the correct table entry?
+E3D4 20 14       4 368 jr      nz, NotFound                ; No, so this is not the correct table
+E3D6             4 369 ; BASIC: ... AND (p = iPrecode(n)) ?
+E3D6 AF          4 370 xor     a                           ; Default precode for comparison = 0x00
+E3D7 DD CB 03 7E 4 371 bit     7, (ix+3)                   ; Precode (index or extended)?
+E3DB 28 0A       4 372 jr      z, GotPrCode                ; No, so skip
+E3DD 3E CB       4 373 ld      a, $CB                      ; Default precode for comparison = 0xCB
+E3DF DD CB 03 76 4 374 bit     6, (ix+3)                   ; Precode = 0xED?
+E3E3 28 02       4 375 jr      z, GotPrCode                ; No, so skip
+E3E5 3E ED       4 376 ld      a, $ED                      ; Yes, so precode for comparison = 0xED
+E3E7             4 377 GotPrCode:
+E3E7 BB          4 378 cp      e                           ; Compare table precode with instruction
+E3E8 28 09       4 379 jr      z, Found                    ; Yes, so this is the correct table
+E3EA             4 380 NotFound:
+E3EA C5          4 381 push    bc                          ; Preserve BC
+E3EB 01 05 00    4 382 ld      bc, 5                       ; No, so try next table entry
+E3EE DD 09       4 383 add     ix, bc                      ; Point to next table entry
+E3F0 C1          4 384 pop     bc                          ; Restore BC
+E3F1 18 D5       4 385 jr      Table
+E3F3             4 387 ; We now have the correct instruction table entry (pointer to by IX)
+E3F3             4 388 ; BASIC: (p = iPrecode(n)) And (i And iMask(n)) = (iValue(n) And iMask(n))
+E3F3             4 389 Found:
+E3F3 DD 7E 02    4 390 ld      a, (ix+2)                   ; Get operation string number
+E3F6 21 72 01    4 391 Realloc_45          ld      hl, iDisOpStr-START+1       ; Store operation string number
+E3F9 77          4 392 ld      (hl), a
+E3FA CD 44 01    4 393 Realloc_46          call    DisWrString-START           ; Write operation string
+E3FD 3E 20       4 395 ld      a, ' '                      ; Write space
+E3FF CD 31 01    4 396 Realloc_47          call    StrWrChar-START
+E402             4 398 ; BASIC: Operand sString(iOperand1(n)), t
+E402 DD 7E 03    4 399 ld      a, (ix+3)                   ; Get operand #1 string number
+E405 4A          4 400 ld      c, d                        ; Get primary opcode value
+E406 CD A8 01    4 401 Realloc_48          call    DisWrOperand-START
+E409             4 403 ; BASIC: Operand sString(iOperand2(n)), t
+E409 DD 7E 04    4 404 ld      a, (ix+4)                   ; Get operand #2 string number
+E40C 3D          4 405 dec     a                           ; Is is 1? (null string)
+E40D 28 0C       4 406 jr      z, NoOp2                    ; Yes, so skip this operand
+E40F 3E 2C       4 408 ld      a, ','                      ; Get comma character
+E411 CD 31 01    4 409 Realloc_49          call    StrWrChar-START             ; Write comma to string
+E414 DD 7E 04    4 411 ld      a, (ix+4)                   ; Get operand #2 string number
+E417 4A          4 412 ld      c, d                        ; Get primary opcode value
+E418 CD A8 01    4 413 Realloc_50          call    DisWrOperand-START
+E41B             4 414 NoOp2:
+E41B             4 415 ; If relative jump show absolute address in brackets
+E41B 7E          4 416 ld      a, (hl)                     ; Get operation string number
+E41C FE 1B       4 417 cp      kDisJR                      ; JR instruction?
+E41E 28 04       4 418 jr      z, Rel                      ; Yes, so skip
+E420 FE 1C       4 419 cp      kDisDJNZ                    ; DJNZ instruction?
+E422 20 22       4 420 jr      nz, NotRel                  ; No so skip
+E424             4 421 Rel:
+E424 2A 33 01    4 422 Realloc_51          ld      hl, (iStrStart+1-START)     ; An ugly way to only show absolute address
+E427 2B          4 423 dec     hl                          ;  (by Antonio Luque)
+E428 2B          4 424 dec     hl
+E429 2B          4 425 dec     hl
+E42A 22 33 01    4 426 Realloc_52          ld      (iStrStart-START+1), hl
+E42D             4 427 iDisImmed:
+E42D 3E 00       4 428 ld      a, $00                      ; Get immediate value from instruction
+E42F 5F          4 429 ld      e, a                        ; Get displacement lo (signed byte)
+E430 16 00       4 430 ld      d, 0                        ; Default to hi byte = zero
+E432 17          4 431 rla                                 ; Displacement negative?
+E433 30 01       4 432 jr      nc, JRadd                   ; No, so skip
+E435 15          4 433 dec     d                           ; Yes, so set hi byte to 0xFF
+E436             4 434 JRadd:
+E436 FD E5       4 435 push    iy                          ; Push address of instruction
+E438 E1          4 436 pop     hl                          ; POP address of instruction
+E439 23          4 437 inc     hl                          ; Increment to
+E43A 23          4 438 inc     hl                          ;  end of the JR/DJNZ instruction
+E43B 19          4 439 add     hl, de                      ; Add signed 16-bit displacement
+E43C 54          4 440 ld      d, h                        ; Get destination address hi byte
+E43D 5D          4 441 ld      e, l                        ; Get destination address lo byte
+E43E 3E 24       4 443 ld      a, '$'
+E440 CD 31 01    4 444 Realloc_53          call    StrWrChar-START             ; Write '$'
+E443 CD 19 01    4 445 Realloc_54          call    StrWrHexWord-START          ; Write hex word to string
+E446             4 447 NotRel:
+E446             4 448 ; Finish building mnemonic string
+E446 3E 0D       4 449 ld      a, CHR_ENTER
+E448 CD 31 01    4 450 Realloc_55          call    StrWrChar-START
+E44B 78          4 452 ld      a, b                        ; Get offset into instruction
+E44C 3C          4 453 inc     a                           ; Increment to give instruction length
+E44D FD E1       4 455 pop     iy                          ; Restore system variables pointer
+E44F FB          4 456 ei                                  ; Enable interrupts
+E450 C9          4 457 ret
+E451             4 460 ; Disassembler: Get instruction opcode
+E451             4 461 ;   On entry: A = Offset from start of instruction
+E451             4 462 ;             IY = Start of instruction
+E451             4 463 ;   On exit:  A = Opcode
+E451             4 464 ;             BC DE HL IX IY I AF' BC' DE' HL' preserved
+E451             4 465 DisGetOpcode:
+E451 C5          4 466 push    bc                          ; Store registers
+E452 FD E5       4 467 push    iy
+E454 4F          4 468 ld      c, a                        ; Offset from start of instruction
+E455 06 00       4 469 ld      b, 0                        ; Clear hi byte ready for addition
+E457 FD 09       4 470 add     iy, bc                      ; Calculate location of opcode
+E459 FD 7E 00    4 471 ld      a, (iy+0)                   ; Get opcode from memory
+E45C FD E1       4 472 pop     iy                          ; Restore registers
+E45E C1          4 473 pop     bc
+E45F C9          4 474 ret
+E460             4 476 ; Disassembler: How it works...
+E460             4 477 ; Solution is to use data table to define functions for each operand (see below)
+E460             4 478 ; Decoding table: where the table entry is determined by the operand string number
+E460             4 479 ; String numbers 0 to 12:
+E460             4 480 ;   If bracket flagged print "("
+E460             4 481 ;   If immediate byte flagged print hex byte at PC+Offset+1, Offset += 1
+E460             4 482 ;   If immediate word flagged print word byte at PC+Offset+1 and PC+Offset+2, Offset += 2
+E460             4 483 ;   If bracket flagged print ")"
+E460             4 484 ;   If substitution string specified: (non-zero value)
+E460             4 485 ;     n = opcode and SubsMask
+E460             4 486 ;     n = n >> x, where x is the number of right shifts of the mask til bit 0 is a 1
+E460             4 487 ;     If subsLen is 2 then n = n << 1
+E460             4 488 ;     c =  character at (start of Substitution String + n + 0)
+E460             4 489 ;     if = "-" then print "(HL)" else print character c
+E460             4 490 ;     If SubsLen = 2 then
+E460             4 491 ;       print character at (start of Substitution String + n + 1)
+E460             4 492 ;     Endif
+E460             4 493 ;   End if
 
-; File #5: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\Utilities.z80asm
+; File #5: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Utilities.z80asm
 
-E466             5 1 ; **********************************************************************************************************************
-E466             5 2 ; **  Utility functions                                                                         by Stephen C Cousins  **
-E466             5 3 ; **********************************************************************************************************************
-E466             5 6 ; Utility: Find start of specified string in bit 7 delimited list
-E466             5 7 ;   On entry: A = String number
-E466             5 8 ;   On exit:  HL = Start of string
-E466             5 9 ;             BC DE IX IY I AF' BC' DE' HL' preserved
-E466             5 10 ; Find string A in bit 7 delimited string list
-E466             5 11 FindStringInList:
-E466 C5          5 12 push    bc
-E467 21 73 03    5 14 Realloc_56          ld      hl, DisString-START-1       ; Start of string list
-E46A 47          5 15 ld      b, a                        ; Get string number
-E46B             5 16 NextChar:
-E46B 23          5 17 inc     hl                          ; Point to next character
-E46C CB 7E       5 18 bit     7, (hl)                     ; Start of new string?
-E46E 28 FB       5 19 jr      z, NextChar                 ; No, so go get next character
-E470 10 F9       5 20 djnz    NextChar                    ; Loop back if not the right string
-E472 C1          5 22 pop     bc
-E473 C9          5 23 ret
+E460             5 1 ; **********************************************************************************************************************
+E460             5 2 ; **  Utility functions                                                                         by Stephen C Cousins  **
+E460             5 3 ; **********************************************************************************************************************
+E460             5 6 ; Utility: Find start of specified string in bit 7 delimited list
+E460             5 7 ;   On entry: A = String number
+E460             5 8 ;   On exit:  HL = Start of string
+E460             5 9 ;             BC DE IX IY I AF' BC' DE' HL' preserved
+E460             5 10 ; Find string A in bit 7 delimited string list
+E460             5 11 FindStringInList:
+E460 C5          5 12 push    bc
+E461 21 6D 03    5 14 Realloc_56          ld      hl, DisString-START-1       ; Start of string list
+E464 47          5 15 ld      b, a                        ; Get string number
+E465             5 16 NextChar:
+E465 23          5 17 inc     hl                          ; Point to next character
+E466 CB 7E       5 18 bit     7, (hl)                     ; Start of new string?
+E468 28 FB       5 19 jr      z, NextChar                 ; No, so go get next character
+E46A 10 F9       5 20 djnz    NextChar                    ; Loop back if not the right string
+E46C C1          5 22 pop     bc
+E46D C9          5 23 ret
 
-; File #6: C:\Users\Antonio\source\repos\Disassembler\Z80CodeFiles\DisData.z80asm
+; File #6: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\DisData.z80asm
 
-E474             6 1 ; **********************************************************************************************************************
-E474             6 2 ; **  Disassembler data                                                                         by Stephen C Cousins  **
-E474             6 3 ; **********************************************************************************************************************
-E474             6 6 kDisSubsL:          EQU     $0D                         ; Last operand substitution string
-E474             6 7 kDisBracHL:         EQU     $15                         ; Bracketed HL
-E474             6 8 kDisHL:             EQU     $18                         ; Operation string 'HL'
-E474             6 9 kDisJR:             EQU     $1B                         ; Operation string 'JR'
-E474             6 10 kDisDJNZ:           EQU     $1C                         ; Operation string 'DJNZ'
-E474             6 11 kDisJP:             EQU     $1E                         ; Operation string 'JP'
-E474             6 12 kDisH               EQU     $6E                         ; Operation string 'H'
-E474             6 13 kDisL               EQU     $71                         ; Operation string 'L'
-E474             6 14 kDisOpMask:         EQU     $3F                         ; Operand 1 mask to exclude pre-code bits
-E474             6 17 ; Disassembler string table: (DisString)
-E474             6 18 ; This contains many string which are not null terminated and have no length 
-E474             6 19 ; value. Instead they are tightly packed with the start of each string 
-E474             6 20 ; indicated by the first character having bit 7 set.
-E474             6 21 DisString:
-E474 80          6 22 DEFB    $80                         ; String $01 = 
-E475 EE          6 23 DEFB    $80+'n'                     ; String $02 = n
-E476 A8          6 24 DEFB    $80+'('
-E477 6E 29       6 25 DEFM    "n)"                        ; String $03 = (n)
-E479 EE 6E       6 26 DEFB    $80+'n','n'                 ; String $04 = nn
-E47B A8          6 27 DEFB    $80+'('
-E47C 6E 6E 29    6 28 DEFM    "nn)"                       ; String $05 = (nn)
-E47F F2          6 29 DEFB    $80+'r'                     ; String $06 = r
-E480 F2 32       6 30 DEFB    $80+'r','2'                 ; String $07 = r2
-E482 E4 64       6 31 DEFB    $80+'d','d'                 ; String $08 = dd
-E484 F1 71       6 32 DEFB    $80+'q','q'                 ; String $09 = qq
-E486 E3          6 33 DEFB    $80+'c'                     ; String $0A = c
-E487 E3 63       6 34 DEFB    $80+'c','c'                 ; String $0B = cc
-E489 F4          6 35 DEFB    $80+'t'                     ; String $0C = t
-E48A E2          6 36 DEFB    $80+'b'                     ; String $0D = b
-E48B C2          6 37 DEFB    $80+'B'
-E48C 43 44 45 48 6 38 DEFM    "CDEHL-A"                   ; String $0E = BCDEHL-A
-E490 4C 2D 41    6 38 
-E493 C2          6 39 DEFB    $80+'B'
-E494 43 44 45 2A 6 40 DEFM    "CDE**SP"                   ; String $0F = BCDE**SP
-E498 2A 53 50    6 40 
-E49B C2          6 41 DEFB    $80+'B'
-E49C 43 44 45 2A 6 42 DEFM    "CDE**AF"                   ; String $10 = BCDE**AF
-E4A0 2A 41 46    6 42 
-E4A3 CE          6 43 DEFB    $80+'N'
-E4A4 5A 5A 2E 4E 6 44 DEFM    "ZZ.NCC."                   ; String $11 = NZZ.NCC.
-E4A8 43 43 2E    6 44 
-E4AB CE          6 45 DEFB    $80+'N'
-E4AC 5A 5A 2E 4E 6 46 DEFM    "ZZ.NCC.POPEP.M."           ; String $12 = NZZ.NCC.POPEP.M.
-E4B0 43 43 2E 50 6 46 
-E4B4 4F 50 45 50 6 46 
-E4B8 2E 4D 2E    6 46 
-E4BB B0          6 47 DEFB    $80+'0'
-E4BC 30 30 38 31 6 48 DEFM    "008162432404856"           ; String $13 = 0008101820283038
-E4C0 36 32 34 33 6 48 
-E4C4 32 34 30 34 6 48 
-E4C8 38 35 36    6 48 
-E4CB B0          6 49 DEFB    $80+'0'
-E4CC 31 32 33 34 6 50 DEFM    "1234567"                   ; String $14 = 01234567
-E4D0 35 36 37    6 50 
-E4D3 A8          6 51 DEFB    $80+'('
-E4D4 48 4C 29    6 52 DEFM    "HL)"                       ; String $15 = (HL)
-E4D7 A8          6 53 DEFB    $80+'('
-E4D8 49 58 2B    6 54 DEFM    "IX+"                       ; String $16 = (IX+
-E4DB A8          6 55 DEFB    $80+'('
-E4DC 49 59 2B    6 56 DEFM    "IY+"                       ; String $17 = (IY+
-E4DF C8 4C       6 57 DEFB    $80+'H','L'                 ; String $18 = HL
-E4E1 C9 58       6 58 DEFB    $80+'I','X'                 ; String $19 = IX
-E4E3 C9 59       6 59 DEFB    $80+'I','Y'                 ; String $1A = IY
-E4E5 CA 52       6 60 DEFB    $80+'J','R'                 ; String $1B = JR
-E4E7 C4          6 61 DEFB    $80+'D'
-E4E8 4A 4E 5A    6 62 DEFM    "JNZ"                       ; String $1C = DJNZ
-E4EB D2          6 63 DEFB    $80+'R'
-E4EC 53 54       6 64 DEFM    "ST"                        ; String $1D = RST
-E4EE CA 50       6 65 DEFB    $80+'J','P'                 ; String $1E = JP
-E4F0 C3          6 66 DEFB    $80+'C'
-E4F1 41 4C 4C    6 67 DEFM    "ALL"                       ; String $1F = CALL
-E4F4 D2          6 68 DEFB    $80+'R'
-E4F5 45 54       6 69 DEFM    "ET"                        ; String $20 = RET
-E4F7 D2          6 70 DEFB    $80+'R'
-E4F8 45 54 49    6 71 DEFM    "ETI"                       ; String $21 = RETI
-E4FB D2          6 72 DEFB    $80+'R'
-E4FC 45 54 4E    6 73 DEFM    "ETN"                       ; String $22 = RETN
-E4FF C1          6 74 DEFB    $80+'A'                     ; String $23 = A
-E500 A8          6 75 DEFB    $80+'('
-E501 53 50 29    6 76 DEFM    "SP)"                       ; String $24 = (SP)
-E504 C1 46       6 77 DEFB    $80+'A','F'                 ; String $25 = AF
-E506 C4 45       6 78 DEFB    $80+'D','E'                 ; String $26 = DE
-E508 B0          6 79 DEFB    $80+'0'                     ; String $27 = 0
-E509 B1          6 80 DEFB    $80+'1'                     ; String $28 = 1
-E50A B2          6 81 DEFB    $80+'2'                     ; String $29 = 2
-E50B A8          6 82 DEFB    $80+'('
-E50C 42 43 29    6 83 DEFM    "BC)"                       ; String $2A = (BC)
-E50F A8          6 84 DEFB    $80+'('
-E510 44 45 29    6 85 DEFM    "DE)"                       ; String $2B = (DE)
-E513 D3 50       6 86 DEFB    $80+'S','P'                 ; String $2C = SP
-E515 C9          6 87 DEFB    $80+'I'                     ; String $2D = I
-E516 D2          6 88 DEFB    $80+'R'                     ; String $2E = R
-E517 A8          6 89 DEFB    $80+'('
-E518 43 29       6 90 DEFM    "C)"                        ; String $2F = (C)
-E51A C1          6 91 DEFB    $80+'A'
-E51B 46 27       6 92 DEFM    "F'"                        ; String $30 = AF'
-E51D C1          6 93 DEFB    $80+'A'
-E51E 44 43       6 94 DEFM    "DC"                        ; String $31 = ADC
-E520 C1          6 95 DEFB    $80+'A'
-E521 44 44       6 96 DEFM    "DD"                        ; String $32 = ADD
-E523 C1          6 97 DEFB    $80+'A'
-E524 4E 44       6 98 DEFM    "ND"                        ; String $33 = AND
-E526 C2          6 99 DEFB    $80+'B'
-E527 49 54       6 100 DEFM    "IT"                        ; String $34 = BIT
-E529 C3          6 101 DEFB    $80+'C'
-E52A 43 46       6 102 DEFM    "CF"                        ; String $35 = CCF
-E52C C3          6 103 DEFB    $80+'C'
-E52D 50          6 104 DEFM    "P"                         ; String $36 = CP
-E52E C3          6 105 DEFB    $80+'C'
-E52F 50 44       6 106 DEFM    "PD"                        ; String $37 = CPD
-E531 C3          6 107 DEFB    $80+'C'
-E532 50 44 52    6 108 DEFM    "PDR"                       ; String $38 = CPDR
-E535 C3          6 109 DEFB    $80+'C'
-E536 50 49       6 110 DEFM    "PI"                        ; String $39 = CPI
-E538 C3          6 111 DEFB    $80+'C'
-E539 50 49 52    6 112 DEFM    "PIR"                       ; String $3A = CPIR
-E53C C3          6 113 DEFB    $80+'C'
-E53D 50 4C       6 114 DEFM    "PL"                        ; String $3B = CPL
-E53F C4          6 115 DEFB    $80+'D'
-E540 41 41       6 116 DEFM    "AA"                        ; String $3C = DAA
-E542 C4          6 117 DEFB    $80+'D'
-E543 45 43       6 118 DEFM    "EC"                        ; String $3D = DEC
-E545 C4          6 119 DEFB    $80+'D'
-E546 49          6 120 DEFM    "I"                         ; String $3E = DI
-E547 C5          6 121 DEFB    $80+'E'
-E548 49          6 122 DEFM    "I"                         ; String $3F = EI
-E549 C5          6 123 DEFB    $80+'E'
-E54A 58          6 124 DEFM    "X"                         ; String $40 = EX
-E54B C5          6 125 DEFB    $80+'E'
-E54C 58 58       6 126 DEFM    "XX"                        ; String $41 = EXX
-E54E C8          6 127 DEFB    $80+'H'
-E54F 41 4C 54    6 128 DEFM    "ALT"                       ; String $42 = HALT
-E552 C9          6 129 DEFB    $80+'I'
-E553 4D          6 130 DEFM    "M"                         ; String $43 = IM
-E554 C9          6 131 DEFB    $80+'I'
-E555 4E          6 132 DEFM    "N"                         ; String $44 = IN
-E556 C9          6 133 DEFB    $80+'I'
-E557 4E 43       6 134 DEFM    "NC"                        ; String $45 = INC
-E559 C9          6 135 DEFB    $80+'I'
-E55A 4E 44       6 136 DEFM    "ND"                        ; String $46 = IND
-E55C C9          6 137 DEFB    $80+'I'
-E55D 4E 44 52    6 138 DEFM    "NDR"                       ; String $47 = INDR
-E560 C9          6 139 DEFB    $80+'I'
-E561 4E 49       6 140 DEFM    "NI"                        ; String $48 = INI
-E563 C9          6 141 DEFB    $80+'I'
-E564 4E 49 52    6 142 DEFM    "NIR"                       ; String $49 = INIR
-E567 CC          6 143 DEFB    $80+'L'
-E568 44          6 144 DEFM    "D"                         ; String $4A = LD
-E569 CC          6 145 DEFB    $80+'L'
-E56A 44 44       6 146 DEFM    "DD"                        ; String $4B = LDD
-E56C CC          6 147 DEFB    $80+'L'
-E56D 44 44 52    6 148 DEFM    "DDR"                       ; String $4C = LDDR
-E570 CC          6 149 DEFB    $80+'L'
-E571 44 49       6 150 DEFM    "DI"                        ; String $4D = LDI
-E573 CC          6 151 DEFB    $80+'L'
-E574 44 49 52    6 152 DEFM    "DIR"                       ; String $4E = LDIR
-E577 CE          6 153 DEFB    $80+'N'
-E578 45 47       6 154 DEFM    "EG"                        ; String $4F = NEG
-E57A CE          6 155 DEFB    $80+'N'
-E57B 4F 50       6 156 DEFM    "OP"                        ; String $50 = NOP
-E57D CF          6 157 DEFB    $80+'O'
-E57E 52          6 158 DEFM    "R"                         ; String $51 = OR
-E57F CF          6 159 DEFB    $80+'O'
-E580 54 44 52    6 160 DEFM    "TDR"                       ; String $52 = OTDR
-E583 CF          6 161 DEFB    $80+'O'
-E584 54 49 52    6 162 DEFM    "TIR"                       ; String $53 = OTIR
-E587 CF          6 163 DEFB    $80+'O'
-E588 55 54       6 164 DEFM    "UT"                        ; String $54 = OUT
-E58A CF          6 165 DEFB    $80+'O'
-E58B 55 54 44    6 166 DEFM    "UTD"                       ; String $55 = OUTD
-E58E CF          6 167 DEFB    $80+'O'
-E58F 55 54 49    6 168 DEFM    "UTI"                       ; String $56 = OUTI
-E592 D0          6 169 DEFB    $80+'P'
-E593 4F 50       6 170 DEFM    "OP"                        ; String $57 = POP
-E595 D0          6 171 DEFB    $80+'P'
-E596 55 53 48    6 172 DEFM    "USH"                       ; String $58 = PUSH
-E599 D2          6 173 DEFB    $80+'R'
-E59A 45 53       6 174 DEFM    "ES"                        ; String $59 = RES
-E59C D2          6 175 DEFB    $80+'R'
-E59D 4C          6 176 DEFM    "L"                         ; String $5A = RL
-E59E D2          6 177 DEFB    $80+'R'
-E59F 4C 41       6 178 DEFM    "LA"                        ; String $5B = RLA
-E5A1 D2          6 179 DEFB    $80+'R'
-E5A2 4C 43       6 180 DEFM    "LC"                        ; String $5C = RLC
-E5A4 D2          6 181 DEFB    $80+'R'
-E5A5 4C 43 41    6 182 DEFM    "LCA"                       ; String $5D = RLCA
-E5A8 D2          6 183 DEFB    $80+'R'
-E5A9 4C 44       6 184 DEFM    "LD"                        ; String $5E = RLD
-E5AB D2          6 185 DEFB    $80+'R'
-E5AC 52          6 186 DEFM    "R"                         ; String $5F = RR
-E5AD D2          6 187 DEFB    $80+'R'
-E5AE 52 41       6 188 DEFM    "RA"                        ; String $60 = RRA
-E5B0 D2          6 189 DEFB    $80+'R'
-E5B1 52 43       6 190 DEFM    "RC"                        ; String $61 = RRC
-E5B3 D2          6 191 DEFB    $80+'R'
-E5B4 52 43 41    6 192 DEFM    "RCA"                       ; String $62 = RRCA
-E5B7 D2          6 193 DEFB    $80+'R'
-E5B8 52 44       6 194 DEFM    "RD"                        ; String $63 = RRD
-E5BA D3          6 195 DEFB    $80+'S'
-E5BB 42 43       6 196 DEFM    "BC"                        ; String $64 = SBC
-E5BD D3          6 197 DEFB    $80+'S'
-E5BE 43 46       6 198 DEFM    "CF"                        ; String $65 = SCF
-E5C0 D3          6 199 DEFB    $80+'S'
-E5C1 45 54       6 200 DEFM    "ET"                        ; String $66 = SET
-E5C3 D3          6 201 DEFB    $80+'S'
-E5C4 4C 41       6 202 DEFM    "LA"                        ; String $67 = SLA
-E5C6 D3          6 203 DEFB    $80+'S'
-E5C7 4C 4C       6 204 DEFM    "LL"                        ; String $68 = SLL
-E5C9 D3          6 205 DEFB    $80+'S'
-E5CA 52 41       6 206 DEFM    "RA"                        ; String $69 = SRA
-E5CC D3          6 207 DEFB    $80+'S'
-E5CD 52 4C       6 208 DEFM    "RL"                        ; String $6A = SRL
-E5CF D3          6 209 DEFB    $80+'S'
-E5D0 55 42       6 210 DEFM    "UB"                        ; String $6B = SUB
-E5D2 D8          6 211 DEFB    $80+'X'
-E5D3 4F 52       6 212 DEFM    "OR"                        ; String $6C = XOR
-E5D5 BF          6 213 DEFB    $80+'?'
-E5D6 3F 3F 3F    6 214 DEFM    "???"                       ; String $6D = ????
-E5D9 C8          6 215 DEFB    $80+'H'                     ; String $6E = H
-E5DA C9          6 216 DEFB    $80+'I'
-E5DB 58 48       6 217 DEFM    "XH"                        ; String $6F = IXH
-E5DD C9          6 218 DEFB    $80+'I'
-E5DE 59 48       6 219 DEFM    "YH"                        ; String $70 = IYH
-E5E0 CC          6 220 DEFB    $80+'L'                     ; String $71 = L
-E5E1 C9          6 221 DEFB    $80+'I'
-E5E2 58 4C       6 222 DEFM    "XL"                        ; String $72 = IXL
-E5E4 C9          6 223 DEFB    $80+'I'
-E5E5 59 4C       6 224 DEFM    "YL"                        ; String $73 = IYL
-E5E7 80          6 225 DEFB    $80
-E5E8             6 227 ; Instruction table: (DisInst)
-E5E8             6 228 ; The instruction table definition of the processor's instruction set.
-E5E8             6 229 ; Each instruction is described by 5 bytes:
-E5E8             6 230 ;    Byte 0:  Opcode value
-E5E8             6 231 ;    Byte 1:  Opcode mask
-E5E8             6 232 ;    Byte 2:  Operation string number
-E5E8             6 233 ;    Byte 3:  Operand #1 string number, plus bits 6-7 define precode
-E5E8             6 234 ;    Byte 4:  Operand #2 string number
-E5E8             6 235 ; The precode values code in bits 6-7 are:
-E5E8             6 236 ;    00xx xxxx = No precode
-E5E8             6 237 ;    10xx xxxx = Precode 0xCB
-E5E8             6 238 ;    11xx xxxx = Precode 0xED
-E5E8             6 239 ; Precodes are used by the processor's extended instructions
-E5E8             6 240 DisInst:
-E5E8 88 F8 31 23 6 241 DEFB    $88, $F8, $31, $23, $07     ; Opcode: $88 - ADC  A   ,r2
-E5EC 07          6 241 
-E5ED CE FF 31 23 6 242 DEFB    $CE, $FF, $31, $23, $02     ; Opcode: $CE - ADC  A   ,n
-E5F1 02          6 242 
-E5F2 4A CF 31 D8 6 243 DEFB    $4A, $CF, $31, $D8, $08     ; Opcode: $4A - ADC  HL  ,dd
-E5F6 08          6 243 
-E5F7 80 F8 32 23 6 244 DEFB    $80, $F8, $32, $23, $07     ; Opcode: $80 - ADD  A   ,r2
-E5FB 07          6 244 
-E5FC C6 FF 32 23 6 245 DEFB    $C6, $FF, $32, $23, $02     ; Opcode: $C6 - ADD  A   ,n
-E600 02          6 245 
-E601 09 CF 32 18 6 246 DEFB    $09, $CF, $32, $18, $08     ; Opcode: $09 - ADD  HL  ,dd
-E605 08          6 246 
-E606 A0 F8 33 07 6 247 DEFB    $A0, $F8, $33, $07, $01     ; Opcode: $A0 - AND  r2  ,
-E60A 01          6 247 
-E60B E6 FF 33 02 6 248 DEFB    $E6, $FF, $33, $02, $01     ; Opcode: $E6 - AND  n   ,
-E60F 01          6 248 
-E610 40 C0 34 8D 6 249 DEFB    $40, $C0, $34, $8D, $07     ; Opcode: $40 - BIT  b   ,r2
-E614 07          6 249 
-E615 C4 C7 1F 0B 6 250 DEFB    $C4, $C7, $1F, $0B, $04     ; Opcode: $C4 - CALL cc  ,nn
-E619 04          6 250 
-E61A CD FF 1F 04 6 251 DEFB    $CD, $FF, $1F, $04, $01     ; Opcode: $CD - CALL nn  ,
-E61E 01          6 251 
-E61F 3F FF 35 01 6 252 DEFB    $3F, $FF, $35, $01, $01     ; Opcode: $3F - CCF      ,
-E623 01          6 252 
-E624 B8 F8 36 07 6 253 DEFB    $B8, $F8, $36, $07, $01     ; Opcode: $B8 - CP   r2  ,
-E628 01          6 253 
-E629 FE FF 36 02 6 254 DEFB    $FE, $FF, $36, $02, $01     ; Opcode: $FE - CP   n   ,
-E62D 01          6 254 
-E62E A9 FF 37 C1 6 255 DEFB    $A9, $FF, $37, $C1, $01     ; Opcode: $A9 - CPD      ,
-E632 01          6 255 
-E633 B9 FF 38 C1 6 256 DEFB    $B9, $FF, $38, $C1, $01     ; Opcode: $B9 - CPDR     ,
-E637 01          6 256 
-E638 A1 FF 39 C1 6 257 DEFB    $A1, $FF, $39, $C1, $01     ; Opcode: $A1 - CPI      ,
-E63C 01          6 257 
-E63D B1 FF 3A C1 6 258 DEFB    $B1, $FF, $3A, $C1, $01     ; Opcode: $B1 - CPIR     ,
-E641 01          6 258 
-E642 2F FF 3B 01 6 259 DEFB    $2F, $FF, $3B, $01, $01     ; Opcode: $2F - CPL      ,
-E646 01          6 259 
-E647 27 FF 3C 01 6 260 DEFB    $27, $FF, $3C, $01, $01     ; Opcode: $27 - DAA      ,
-E64B 01          6 260 
-E64C 0B CF 3D 08 6 261 DEFB    $0B, $CF, $3D, $08, $01     ; Opcode: $0B - DEC  dd  ,
-E650 01          6 261 
-E651 05 C7 3D 06 6 262 DEFB    $05, $C7, $3D, $06, $01     ; Opcode: $05 - DEC  r   ,
-E655 01          6 262 
-E656 F3 FF 3E 01 6 263 DEFB    $F3, $FF, $3E, $01, $01     ; Opcode: $F3 - DI       ,
-E65A 01          6 263 
-E65B 10 FF 1C 02 6 264 DEFB    $10, $FF, $1C, $02, $01     ; Opcode: $10 - DJNZ n   ,
-E65F 01          6 264 
-E660 FB FF 3F 01 6 265 DEFB    $FB, $FF, $3F, $01, $01     ; Opcode: $FB - EI       ,
-E664 01          6 265 
-E665 E3 FF 40 24 6 266 DEFB    $E3, $FF, $40, $24, $18     ; Opcode: $E3 - EX   (SP),HL
-E669 18          6 266 
-E66A 08 FF 40 25 6 267 DEFB    $08, $FF, $40, $25, $30     ; Opcode: $08 - EX   AF  ,AF'
-E66E 30          6 267 
-E66F EB FF 40 26 6 268 DEFB    $EB, $FF, $40, $26, $18     ; Opcode: $EB - EX   DE  ,HL
-E673 18          6 268 
-E674 D9 FF 41 01 6 269 DEFB    $D9, $FF, $41, $01, $01     ; Opcode: $D9 - EXX      ,
-E678 01          6 269 
-E679 76 FF 42 01 6 270 DEFB    $76, $FF, $42, $01, $01     ; Opcode: $76 - HALT     ,
-E67D 01          6 270 
-E67E 46 FF 43 E7 6 271 DEFB    $46, $FF, $43, $E7, $01     ; Opcode: $46 - IM   0   ,
-E682 01          6 271 
-E683 56 FF 43 E8 6 272 DEFB    $56, $FF, $43, $E8, $01     ; Opcode: $56 - IM   1   ,
-E687 01          6 272 
-E688 5E FF 43 E9 6 273 DEFB    $5E, $FF, $43, $E9, $01     ; Opcode: $5E - IM   2   ,
-E68C 01          6 273 
-E68D 40 C7 44 C6 6 274 DEFB    $40, $C7, $44, $C6, $2F     ; Opcode: $40 - IN   r   ,(C)
-E691 2F          6 274 
-E692 DB FF 44 23 6 275 DEFB    $DB, $FF, $44, $23, $03     ; Opcode: $DB - IN   A   ,(n)
-E696 03          6 275 
-E697 03 CF 45 08 6 276 DEFB    $03, $CF, $45, $08, $01     ; Opcode: $03 - INC  dd  ,
-E69B 01          6 276 
-E69C 04 C7 45 06 6 277 DEFB    $04, $C7, $45, $06, $01     ; Opcode: $04 - INC  r   ,
-E6A0 01          6 277 
-E6A1 AA FF 46 C1 6 278 DEFB    $AA, $FF, $46, $C1, $01     ; Opcode: $AA - IND      ,
-E6A5 01          6 278 
-E6A6 BA FF 47 C1 6 279 DEFB    $BA, $FF, $47, $C1, $01     ; Opcode: $BA - INDR     ,
-E6AA 01          6 279 
-E6AB A2 FF 48 C1 6 280 DEFB    $A2, $FF, $48, $C1, $01     ; Opcode: $A2 - INI      ,
-E6AF 01          6 280 
-E6B0 B2 FF 49 C1 6 281 DEFB    $B2, $FF, $49, $C1, $01     ; Opcode: $B2 - INIR     ,
-E6B4 01          6 281 
-E6B5 E9 FF 1E 15 6 282 DEFB    $E9, $FF, $1E, $15, $01     ; Opcode: $E9 - JP   (HL),
-E6B9 01          6 282 
-E6BA C2 C7 1E 0B 6 283 DEFB    $C2, $C7, $1E, $0B, $04     ; Opcode: $C2 - JP   cc  ,nn
-E6BE 04          6 283 
-E6BF C3 FF 1E 04 6 284 DEFB    $C3, $FF, $1E, $04, $01     ; Opcode: $C3 - JP   nn  ,
-E6C3 01          6 284 
-E6C4 20 E7 1B 0A 6 285 DEFB    $20, $E7, $1B, $0A, $02     ; Opcode: $20 - JR   c   ,n
-E6C8 02          6 285 
-E6C9 18 FF 1B 02 6 286 DEFB    $18, $FF, $1B, $02, $01     ; Opcode: $18 - JR   n   ,
-E6CD 01          6 286 
-E6CE 40 C0 4A 06 6 287 DEFB    $40, $C0, $4A, $06, $07     ; Opcode: $40 - LD   r   ,r2
-E6D2 07          6 287 
-E6D3 02 FF 4A 2A 6 288 DEFB    $02, $FF, $4A, $2A, $23     ; Opcode: $02 - LD   (BC),A
-E6D7 23          6 288 
-E6D8 12 FF 4A 2B 6 289 DEFB    $12, $FF, $4A, $2B, $23     ; Opcode: $12 - LD   (DE),A
-E6DC 23          6 289 
-E6DD 32 FF 4A 05 6 290 DEFB    $32, $FF, $4A, $05, $23     ; Opcode: $32 - LD   (nn),A
-E6E1 23          6 290 
-E6E2 22 FF 4A 05 6 291 DEFB    $22, $FF, $4A, $05, $18     ; Opcode: $22 - LD   (nn),HL
-E6E6 18          6 291 
-E6E7 43 CF 4A C5 6 292 DEFB    $43, $CF, $4A, $C5, $08     ; Opcode: $43 - LD   (nn),dd
-E6EB 08          6 292 
-E6EC 0A FF 4A 23 6 293 DEFB    $0A, $FF, $4A, $23, $2A     ; Opcode: $0A - LD   A   ,(BC)
-E6F0 2A          6 293 
-E6F1 1A FF 4A 23 6 294 DEFB    $1A, $FF, $4A, $23, $2B     ; Opcode: $1A - LD   A   ,(DE)
-E6F5 2B          6 294 
-E6F6 3A FF 4A 23 6 295 DEFB    $3A, $FF, $4A, $23, $05     ; Opcode: $3A - LD   A   ,(nn)
-E6FA 05          6 295 
-E6FB 2A FF 4A 18 6 296 DEFB    $2A, $FF, $4A, $18, $05     ; Opcode: $2A - LD   HL  ,(nn)
-E6FF 05          6 296 
-E700 F9 FF 4A 2C 6 297 DEFB    $F9, $FF, $4A, $2C, $18     ; Opcode: $F9 - LD   SP  ,HL
-E704 18          6 297 
-E705 01 CF 4A 08 6 298 DEFB    $01, $CF, $4A, $08, $04     ; Opcode: $01 - LD   dd  ,nn
-E709 04          6 298 
-E70A 4B CF 4A C8 6 299 DEFB    $4B, $CF, $4A, $C8, $05     ; Opcode: $4B - LD   dd  ,(nn)
-E70E 05          6 299 
-E70F 57 FF 4A E3 6 300 DEFB    $57, $FF, $4A, $E3, $2D     ; Opcode: $57 - LD   A   ,I
-E713 2D          6 300 
-E714 5F FF 4A E3 6 301 DEFB    $5F, $FF, $4A, $E3, $2E     ; Opcode: $5F - LD   A   ,R
-E718 2E          6 301 
-E719 47 FF 4A ED 6 302 DEFB    $47, $FF, $4A, $ED, $23     ; Opcode: $47 - LD   I   ,A
-E71D 23          6 302 
-E71E 4F FF 4A EE 6 303 DEFB    $4F, $FF, $4A, $EE, $23     ; Opcode: $4F - LD   R   ,A
-E722 23          6 303 
-E723 06 C7 4A 06 6 304 DEFB    $06, $C7, $4A, $06, $02     ; Opcode: $06 - LD   r   ,n
-E727 02          6 304 
-E728 A8 FF 4B C1 6 305 DEFB    $A8, $FF, $4B, $C1, $01     ; Opcode: $A8 - LDD      ,
-E72C 01          6 305 
-E72D B8 FF 4C C1 6 306 DEFB    $B8, $FF, $4C, $C1, $01     ; Opcode: $B8 - LDDR     ,
-E731 01          6 306 
-E732 A0 FF 4D C1 6 307 DEFB    $A0, $FF, $4D, $C1, $01     ; Opcode: $A0 - LDI      ,
-E736 01          6 307 
-E737 B0 FF 4E C1 6 308 DEFB    $B0, $FF, $4E, $C1, $01     ; Opcode: $B0 - LDIR     ,
-E73B 01          6 308 
-E73C 44 FF 4F C1 6 309 DEFB    $44, $FF, $4F, $C1, $01     ; Opcode: $44 - NEG      ,
-E740 01          6 309 
-E741 00 FF 50 01 6 310 DEFB    $00, $FF, $50, $01, $01     ; Opcode: $00 - NOP      ,
-E745 01          6 310 
-E746 B0 F8 51 07 6 311 DEFB    $B0, $F8, $51, $07, $01     ; Opcode: $B0 - OR   r2  ,
-E74A 01          6 311 
-E74B F6 FF 51 02 6 312 DEFB    $F6, $FF, $51, $02, $01     ; Opcode: $F6 - OR   n   ,
-E74F 01          6 312 
-E750 BB FF 52 C1 6 313 DEFB    $BB, $FF, $52, $C1, $01     ; Opcode: $BB - OTDR     ,
-E754 01          6 313 
-E755 B3 FF 53 C1 6 314 DEFB    $B3, $FF, $53, $C1, $01     ; Opcode: $B3 - OTIR     ,
-E759 01          6 314 
-E75A 41 C7 54 EF 6 315 DEFB    $41, $C7, $54, $EF, $06     ; Opcode: $41 - OUT  (C) ,r
-E75E 06          6 315 
-E75F D3 FF 54 03 6 316 DEFB    $D3, $FF, $54, $03, $23     ; Opcode: $D3 - OUT  (n) ,A
-E763 23          6 316 
-E764 AB FF 55 C1 6 317 DEFB    $AB, $FF, $55, $C1, $01     ; Opcode: $AB - OUTD     ,
-E768 01          6 317 
-E769 A3 FF 56 C1 6 318 DEFB    $A3, $FF, $56, $C1, $01     ; Opcode: $A3 - OUTI     ,
-E76D 01          6 318 
-E76E C1 CF 57 09 6 319 DEFB    $C1, $CF, $57, $09, $01     ; Opcode: $C1 - POP  qq  ,
-E772 01          6 319 
-E773 C5 CF 58 09 6 320 DEFB    $C5, $CF, $58, $09, $01     ; Opcode: $C5 - PUSH qq  ,
-E777 01          6 320 
-E778 80 C0 59 8D 6 321 DEFB    $80, $C0, $59, $8D, $07     ; Opcode: $80 - RES  b   ,r2
-E77C 07          6 321 
-E77D C9 FF 20 01 6 322 DEFB    $C9, $FF, $20, $01, $01     ; Opcode: $C9 - RET      ,
-E781 01          6 322 
-E782 C0 C7 20 0B 6 323 DEFB    $C0, $C7, $20, $0B, $01     ; Opcode: $C0 - RET  cc  ,
-E786 01          6 323 
-E787 4D FF 21 C1 6 324 DEFB    $4D, $FF, $21, $C1, $01     ; Opcode: $4D - RETI     ,
-E78B 01          6 324 
-E78C 45 FF 22 C1 6 325 DEFB    $45, $FF, $22, $C1, $01     ; Opcode: $45 - RETN     ,
-E790 01          6 325 
-E791 10 F8 5A 87 6 326 DEFB    $10, $F8, $5A, $87, $01     ; Opcode: $10 - RL   r2  ,
-E795 01          6 326 
-E796 17 FF 5B 01 6 327 DEFB    $17, $FF, $5B, $01, $01     ; Opcode: $17 - RLA      ,
-E79A 01          6 327 
-E79B 00 F8 5C 87 6 328 DEFB    $00, $F8, $5C, $87, $01     ; Opcode: $00 - RLC  r2  ,
-E79F 01          6 328 
-E7A0 07 FF 5D 01 6 329 DEFB    $07, $FF, $5D, $01, $01     ; Opcode: $07 - RLCA     ,
-E7A4 01          6 329 
-E7A5 6F FF 5E C1 6 330 DEFB    $6F, $FF, $5E, $C1, $01     ; Opcode: $6F - RLD      ,
-E7A9 01          6 330 
-E7AA 18 F8 5F 87 6 331 DEFB    $18, $F8, $5F, $87, $01     ; Opcode: $18 - RR   r2  ,
-E7AE 01          6 331 
-E7AF 1F FF 60 01 6 332 DEFB    $1F, $FF, $60, $01, $01     ; Opcode: $1F - RRA      ,
-E7B3 01          6 332 
-E7B4 08 F8 61 87 6 333 DEFB    $08, $F8, $61, $87, $01     ; Opcode: $08 - RRC  r2  ,
-E7B8 01          6 333 
-E7B9 0F FF 62 01 6 334 DEFB    $0F, $FF, $62, $01, $01     ; Opcode: $0F - RRCA     ,
-E7BD 01          6 334 
-E7BE 67 FF 63 C1 6 335 DEFB    $67, $FF, $63, $C1, $01     ; Opcode: $67 - RRD      ,
-E7C2 01          6 335 
-E7C3 C7 C7 1D 0C 6 336 DEFB    $C7, $C7, $1D, $0C, $01     ; Opcode: $C7 - RST  t   ,
-E7C7 01          6 336 
-E7C8 98 F8 64 23 6 337 DEFB    $98, $F8, $64, $23, $07     ; Opcode: $98 - SBC  A   ,r2
-E7CC 07          6 337 
-E7CD DE FF 64 23 6 338 DEFB    $DE, $FF, $64, $23, $02     ; Opcode: $DE - SBC  A   ,n
-E7D1 02          6 338 
-E7D2 42 CF 64 D8 6 339 DEFB    $42, $CF, $64, $D8, $08     ; Opcode: $42 - SBC  HL  ,dd
-E7D6 08          6 339 
-E7D7 37 FF 65 01 6 340 DEFB    $37, $FF, $65, $01, $01     ; Opcode: $37 - SCF      ,
-E7DB 01          6 340 
-E7DC C0 C0 66 8D 6 341 DEFB    $C0, $C0, $66, $8D, $07     ; Opcode: $C0 - SET  b   ,r2
-E7E0 07          6 341 
-E7E1 20 F8 67 87 6 342 DEFB    $20, $F8, $67, $87, $01     ; Opcode: $20 - SLA  r2  ,
-E7E5 01          6 342 
-E7E6 30 F8 68 87 6 343 DEFB    $30, $F8, $68, $87, $01     ; Opcode: $30 - SLL  r2  ,
-E7EA 01          6 343 
-E7EB 28 F8 69 87 6 344 DEFB    $28, $F8, $69, $87, $01     ; Opcode: $28 - SRA  r2  ,
-E7EF 01          6 344 
-E7F0 38 F8 6A 87 6 345 DEFB    $38, $F8, $6A, $87, $01     ; Opcode: $38 - SRL  r2  ,
-E7F4 01          6 345 
-E7F5 90 F8 6B 07 6 346 DEFB    $90, $F8, $6B, $07, $01     ; Opcode: $90 - SUB  r2  ,
-E7F9 01          6 346 
-E7FA D6 FF 6B 02 6 347 DEFB    $D6, $FF, $6B, $02, $01     ; Opcode: $D6 - SUB  n   ,
-E7FE 01          6 347 
-E7FF A8 F8 6C 07 6 348 DEFB    $A8, $F8, $6C, $07, $01     ; Opcode: $A8 - XOR  r2  ,
-E803 01          6 348 
-E804 EE FF 6C 02 6 349 DEFB    $EE, $FF, $6C, $02, $01     ; Opcode: $EE - XOR  n   ,
-E808 01          6 349 
-E809 00 00 6D 01 6 350 DEFB    $00, $00, $6D, $01, $01     ; Opcode: $00 - ????     ,
-E80D 01          6 350 
-E80E 00 00 6D C1 6 351 DEFB    $00, $00, $6D, $C1, $01     ; Opcode: $00 - ????     ,
-E812 01          6 351 
-E813             6 353 ; Operand table:
-E813             6 354 ;   Index into table is the operand string number 1 to 13)
-E813             6 355 ;   Contents: Substitution string number, function bits BIILMM
-E813             6 356 ;
-E813             6 357 ; Op  String  Offset  Bracket  Immediate  Substitue     subsLen  subsMask  ->  BIILMM
-E813             6 358 ;  1  =""     +0      No       No   (00)  No                n/a  n/a           000000
-E813             6 359 ;  2  ="n"    +1      No       Byte (10)  No                n/a  n/a           010000
-E813             6 360 ;  3  ="(n)"  +1      Yes      Byte (10)  No                n/a  n/a           110000
-E813             6 361 ;  4  ="nn"   +2      No       Word (11)  No                n/a  n/a           011000
-E813             6 362 ;  5  ="(nn)" +2      Yes      Word (11)  No                n/a  n/a           111000
-E813             6 363 ;  6  ="r"    +0      No       No   (00)  "BCDEHL-A"          1  0x38 (11)     000011
-E813             6 364 ;  7  ="r2"   +0      No       No   (00)  "BCDEHL-A"          1  0x07 (00)     000000
-E813             6 365 ;  8  ="dd"   +0      No       No   (00)  "BCDEHLSP"          2  0x30 (10)     000110
-E813             6 366 ;  9  ="qq"   +0      No       No   (00)  "BCDEHLAF"          2  0x30 (10)     000110
-E813             6 367 ; 10  ="c"    +0      No       No   (00)  "NZZ NCC "          2  0x18 (01)     000101
-E813             6 368 ; 11  ="cc"   +0      No       No   (00)  "NZZ NCC POPEP M "  2  0x38 (11)     000111
-E813             6 369 ; 12  ="t"    +0      No       No   (00)  "0008101820283038"  2  0x38 (11)     000111
-E813             6 370 ; 13  ="b"    +0      No       No   (00)  "01234567"          1  0x38 (11)     000011
-E813             6 371 ; Each table entry is coded with the string number plus a byte containing BIILMM bits
-E813             6 372 ; Length bit is hi for strings with two character substitutions
-E813             6 373 DisOperandTable:
-E813 00 00       6 374 DEFB    $00, $00                    ; 0b000000 ;Operand  1 = ""
-E815 00 10       6 375 DEFB    $00, $10                    ; 0b010000 ;Operand  2 = "n"
-E817 00 30       6 376 DEFB    $00, $30                    ; 0b110000 ;Operand  3 = "(n)"
-E819 00 18       6 377 DEFB    $00, $18                    ; 0b011000 ;Operand  4 = "nn"
-E81B 00 38       6 378 DEFB    $00, $38                    ; 0b111000 ;Operand  5 = "(nn)"
-E81D 0E 03       6 379 DEFB    $0E, $03                    ; 0b000011 ;Operand  6 = "r"
-E81F 0E 00       6 380 DEFB    $0E, $00                    ; 0b000000 ;Operand  7 = "r2"
-E821 0F 06       6 381 DEFB    $0F, $06                    ; 0b000110 ;Operand  8 = "dd"
-E823 10 06       6 382 DEFB    $10, $06                    ; 0b000110 ;Operand  9 = "qq"
-E825 11 05       6 383 DEFB    $11, $05                    ; 0b000101 ;Operand 10 = "c"
-E827 12 07       6 384 DEFB    $12, $07                    ; 0b000111 ;Operand 11 = "cc"
-E829 13 07       6 385 DEFB    $13, $07                    ; 0b000111 ;Operand 12 = "t"
-E82B 14 03       6 386 DEFB    $14, $03                    ; 0b000011 ;Operand 13 = "b"
-E82D             6 388 ; Mask table
-E82D             6 389 ; These are the masks used to separate token values such as register "BCDEHL-A"
-E82D             6 390 ; The index into the table is coded in the two mask bits from the above table.
-E82D             6 391 DisMaskTable:
-E82D 07          6 392 DEFB    $07                         ; Mask type 0
-E82E 18          6 393 DEFB    $18                         ; Mask type 1
-E82F 30          6 394 DEFB    $30                         ; Mask type 2
-E830 38          6 395 DEFB    $38                         ; Mask type 3
-E831             6 398 ; **********************************************************************************************************************
-E831             6 399 ; **  Added by Antonio Luque for ZX Spectrum disASM                                                                   **
-E831             6 400 ; **********************************************************************************************************************
-E831             6 402 ; Strings
-E831 6D 6F 72 65 6 403 StrMore:            DEFM    "more?"
-E835 3F          6 403 
-E836             6 404 StrLabels:
-E836 66 72 6F 6D 6 405 DEFM    "from:"
-E83A 3A          6 405 
-E83B 20 20 74 6F 6 406 DEFM    "  to:"
-E83F 3A          6 406 
-E840             6 408 ; Relative reallocation addresses ** MUST be below StrLabels **
-E840             6 409 ; This space is reused for the string buffer and the internal stack
-E840             6 410 Realloc_Addrs:
-E840             6 411 kStrBuffer:
-E840 20 00       6 412 DEFW    Realloc_A-START+1
-E842 23 00       6 413 DEFW    Realloc_B-START+1
-E844 26 00       6 414 DEFW    Realloc_C-START+1
-E846 2E 00       6 415 DEFW    Realloc_1-START+1
-E848 33 00       6 416 DEFW    Realloc_2-START+1
-E84A 36 00       6 417 DEFW    Realloc_3-START+1
-E84C 45 00       6 418 DEFW    Realloc_4-START+1
-E84E E2 00       6 419 DEFW    Realloc_5-START+1
-E850 03 01       6 420 DEFW    Realloc_6-START+1
-E852 14 01       6 421 DEFW    Realloc_7-START+1
-E854 19 01       6 422 DEFW    Realloc_8-START+1
-E856 21 01       6 423 DEFW    Realloc_9-START+1
-E858 2C 01       6 424 DEFW    Realloc_10-START+1
-E85A 3E 01       6 425 DEFW    Realloc_11-START+1
-E85C 69 01       6 426 DEFW    Realloc_12-START+1
-E85E 73 01       6 427 DEFW    Realloc_13-START+1
-E860 80 01       6 428 DEFW    Realloc_14-START+1
-E862 96 01       6 429 DEFW    Realloc_15-START+1
-E864 9B 01       6 430 DEFW    Realloc_16-START+1
-E866 9F 01       6 431 DEFW    Realloc_17-START+1
-E868 A4 01       6 432 DEFW    Realloc_18-START+1
-E86A B7 01       6 433 DEFW    Realloc_19-START+1
-E86C CA 01       6 434 DEFW    Realloc_20-START+1
-E86E D3 01       6 435 DEFW    Realloc_21-START+1
-E870 D8 01       6 436 DEFW    Realloc_22-START+1
-E872 DB 01       6 437 DEFW    Realloc_23-START+1
-E874 E5 01       6 438 DEFW    Realloc_24-START+1
-E876 E8 01       6 439 DEFW    Realloc_25-START+1
-E878 EC 01       6 440 DEFW    Realloc_26-START+1
-E87A F5 01       6 441 DEFW    Realloc_27-START+1
-E87C 00 02       6 442 DEFW    Realloc_28-START+1
-E87E 1B 02       6 443 DEFW    Realloc_29-START+1
-E880 1E 02       6 444 DEFW    Realloc_30-START+1
-E882 4F 02       6 445 DEFW    Realloc_31-START+1
-E884 55 02       6 446 DEFW    Realloc_32-START+1
-E886 60 02       6 447 DEFW    Realloc_33-START+1
-E888 71 02       6 448 DEFW    Realloc_34-START+2          ; ld ix,nn
-E88A 75 02       6 449 DEFW    Realloc_35-START+2          ; ld (nn),de
-E88C 78 02       6 450 DEFW    Realloc_36-START+1
-E88E 7C 02       6 451 DEFW    Realloc_37-START+1
-E890 7F 02       6 452 DEFW    Realloc_38-START+1
-E892 8A 02       6 453 DEFW    Realloc_39-START+2          ; ld (nn),de
-E894 90 02       6 454 DEFW    Realloc_40-START+1
-E896 94 02       6 455 DEFW    Realloc_41-START+1
-E898 A2 02       6 456 DEFW    Realloc_42-START+1
-E89A C8 02       6 457 DEFW    Realloc_43-START+1
-E89C CC 02       6 458 DEFW    Realloc_44-START+1
-E89E FD 02       6 459 DEFW    Realloc_45-START+1
-E8A0 01 03       6 460 DEFW    Realloc_46-START+1
-E8A2 06 03       6 461 DEFW    Realloc_47-START+1
-E8A4 0D 03       6 462 DEFW    Realloc_48-START+1
-E8A6 18 03       6 463 DEFW    Realloc_49-START+1
-E8A8 1F 03       6 464 DEFW    Realloc_50-START+1
-E8AA 2B 03       6 465 DEFW    Realloc_51-START+1
-E8AC 31 03       6 466 DEFW    Realloc_52-START+1
-E8AE 47 03       6 467 DEFW    Realloc_53-START+1
-E8B0 4A 03       6 468 DEFW    Realloc_54-START+1
-E8B2 4F 03       6 469 DEFW    Realloc_55-START+1
-E8B4 68 03       6 470 DEFW    Realloc_56-START+1
-E8B6 00 00       6 471 DEFW    $0000
-E8B8             6 472 ; The stack begins here
-E8B8             6 473 END
+E46E             6 1 ; **********************************************************************************************************************
+E46E             6 2 ; **  Disassembler data                                                                         by Stephen C Cousins  **
+E46E             6 3 ; **********************************************************************************************************************
+E46E             6 6 kDisSubsL:          EQU     $0D                         ; Last operand substitution string
+E46E             6 7 kDisBracHL:         EQU     $15                         ; Bracketed HL
+E46E             6 8 kDisHL:             EQU     $18                         ; Operation string 'HL'
+E46E             6 9 kDisJR:             EQU     $1B                         ; Operation string 'JR'
+E46E             6 10 kDisDJNZ:           EQU     $1C                         ; Operation string 'DJNZ'
+E46E             6 11 kDisJP:             EQU     $1E                         ; Operation string 'JP'
+E46E             6 12 kDisH               EQU     $6E                         ; Operation string 'H'
+E46E             6 13 kDisL               EQU     $71                         ; Operation string 'L'
+E46E             6 14 kDisOpMask:         EQU     $3F                         ; Operand 1 mask to exclude pre-code bits
+E46E             6 17 ; Disassembler string table: (DisString)
+E46E             6 18 ; This contains many string which are not null terminated and have no length 
+E46E             6 19 ; value. Instead they are tightly packed with the start of each string 
+E46E             6 20 ; indicated by the first character having bit 7 set.
+E46E             6 21 DisString:
+E46E 80          6 22 DEFB    $80                         ; String $01 = 
+E46F EE          6 23 DEFB    $80+'n'                     ; String $02 = n
+E470 A8          6 24 DEFB    $80+'('
+E471 6E 29       6 25 DEFM    "n)"                        ; String $03 = (n)
+E473 EE 6E       6 26 DEFB    $80+'n','n'                 ; String $04 = nn
+E475 A8          6 27 DEFB    $80+'('
+E476 6E 6E 29    6 28 DEFM    "nn)"                       ; String $05 = (nn)
+E479 F2          6 29 DEFB    $80+'r'                     ; String $06 = r
+E47A F2 32       6 30 DEFB    $80+'r','2'                 ; String $07 = r2
+E47C E4 64       6 31 DEFB    $80+'d','d'                 ; String $08 = dd
+E47E F1 71       6 32 DEFB    $80+'q','q'                 ; String $09 = qq
+E480 E3          6 33 DEFB    $80+'c'                     ; String $0A = c
+E481 E3 63       6 34 DEFB    $80+'c','c'                 ; String $0B = cc
+E483 F4          6 35 DEFB    $80+'t'                     ; String $0C = t
+E484 E2          6 36 DEFB    $80+'b'                     ; String $0D = b
+E485 C2          6 37 DEFB    $80+'B'
+E486 43 44 45 48 6 38 DEFM    "CDEHL-A"                   ; String $0E = BCDEHL-A
+E48A 4C 2D 41    6 38 
+E48D C2          6 39 DEFB    $80+'B'
+E48E 43 44 45 2A 6 40 DEFM    "CDE**SP"                   ; String $0F = BCDE**SP
+E492 2A 53 50    6 40 
+E495 C2          6 41 DEFB    $80+'B'
+E496 43 44 45 2A 6 42 DEFM    "CDE**AF"                   ; String $10 = BCDE**AF
+E49A 2A 41 46    6 42 
+E49D CE          6 43 DEFB    $80+'N'
+E49E 5A 5A 2E 4E 6 44 DEFM    "ZZ.NCC."                   ; String $11 = NZZ.NCC.
+E4A2 43 43 2E    6 44 
+E4A5 CE          6 45 DEFB    $80+'N'
+E4A6 5A 5A 2E 4E 6 46 DEFM    "ZZ.NCC.POPEP.M."           ; String $12 = NZZ.NCC.POPEP.M.
+E4AA 43 43 2E 50 6 46 
+E4AE 4F 50 45 50 6 46 
+E4B2 2E 4D 2E    6 46 
+E4B5 B0          6 47 DEFB    $80+'0'
+E4B6 30 30 38 31 6 48 DEFM    "008162432404856"           ; String $13 = 0008101820283038
+E4BA 36 32 34 33 6 48 
+E4BE 32 34 30 34 6 48 
+E4C2 38 35 36    6 48 
+E4C5 B0          6 49 DEFB    $80+'0'
+E4C6 31 32 33 34 6 50 DEFM    "1234567"                   ; String $14 = 01234567
+E4CA 35 36 37    6 50 
+E4CD A8          6 51 DEFB    $80+'('
+E4CE 48 4C 29    6 52 DEFM    "HL)"                       ; String $15 = (HL)
+E4D1 A8          6 53 DEFB    $80+'('
+E4D2 49 58 2B    6 54 DEFM    "IX+"                       ; String $16 = (IX+
+E4D5 A8          6 55 DEFB    $80+'('
+E4D6 49 59 2B    6 56 DEFM    "IY+"                       ; String $17 = (IY+
+E4D9 C8 4C       6 57 DEFB    $80+'H','L'                 ; String $18 = HL
+E4DB C9 58       6 58 DEFB    $80+'I','X'                 ; String $19 = IX
+E4DD C9 59       6 59 DEFB    $80+'I','Y'                 ; String $1A = IY
+E4DF CA 52       6 60 DEFB    $80+'J','R'                 ; String $1B = JR
+E4E1 C4          6 61 DEFB    $80+'D'
+E4E2 4A 4E 5A    6 62 DEFM    "JNZ"                       ; String $1C = DJNZ
+E4E5 D2          6 63 DEFB    $80+'R'
+E4E6 53 54       6 64 DEFM    "ST"                        ; String $1D = RST
+E4E8 CA 50       6 65 DEFB    $80+'J','P'                 ; String $1E = JP
+E4EA C3          6 66 DEFB    $80+'C'
+E4EB 41 4C 4C    6 67 DEFM    "ALL"                       ; String $1F = CALL
+E4EE D2          6 68 DEFB    $80+'R'
+E4EF 45 54       6 69 DEFM    "ET"                        ; String $20 = RET
+E4F1 D2          6 70 DEFB    $80+'R'
+E4F2 45 54 49    6 71 DEFM    "ETI"                       ; String $21 = RETI
+E4F5 D2          6 72 DEFB    $80+'R'
+E4F6 45 54 4E    6 73 DEFM    "ETN"                       ; String $22 = RETN
+E4F9 C1          6 74 DEFB    $80+'A'                     ; String $23 = A
+E4FA A8          6 75 DEFB    $80+'('
+E4FB 53 50 29    6 76 DEFM    "SP)"                       ; String $24 = (SP)
+E4FE C1 46       6 77 DEFB    $80+'A','F'                 ; String $25 = AF
+E500 C4 45       6 78 DEFB    $80+'D','E'                 ; String $26 = DE
+E502 B0          6 79 DEFB    $80+'0'                     ; String $27 = 0
+E503 B1          6 80 DEFB    $80+'1'                     ; String $28 = 1
+E504 B2          6 81 DEFB    $80+'2'                     ; String $29 = 2
+E505 A8          6 82 DEFB    $80+'('
+E506 42 43 29    6 83 DEFM    "BC)"                       ; String $2A = (BC)
+E509 A8          6 84 DEFB    $80+'('
+E50A 44 45 29    6 85 DEFM    "DE)"                       ; String $2B = (DE)
+E50D D3 50       6 86 DEFB    $80+'S','P'                 ; String $2C = SP
+E50F C9          6 87 DEFB    $80+'I'                     ; String $2D = I
+E510 D2          6 88 DEFB    $80+'R'                     ; String $2E = R
+E511 A8          6 89 DEFB    $80+'('
+E512 43 29       6 90 DEFM    "C)"                        ; String $2F = (C)
+E514 C1          6 91 DEFB    $80+'A'
+E515 46 27       6 92 DEFM    "F'"                        ; String $30 = AF'
+E517 C1          6 93 DEFB    $80+'A'
+E518 44 43       6 94 DEFM    "DC"                        ; String $31 = ADC
+E51A C1          6 95 DEFB    $80+'A'
+E51B 44 44       6 96 DEFM    "DD"                        ; String $32 = ADD
+E51D C1          6 97 DEFB    $80+'A'
+E51E 4E 44       6 98 DEFM    "ND"                        ; String $33 = AND
+E520 C2          6 99 DEFB    $80+'B'
+E521 49 54       6 100 DEFM    "IT"                        ; String $34 = BIT
+E523 C3          6 101 DEFB    $80+'C'
+E524 43 46       6 102 DEFM    "CF"                        ; String $35 = CCF
+E526 C3          6 103 DEFB    $80+'C'
+E527 50          6 104 DEFM    "P"                         ; String $36 = CP
+E528 C3          6 105 DEFB    $80+'C'
+E529 50 44       6 106 DEFM    "PD"                        ; String $37 = CPD
+E52B C3          6 107 DEFB    $80+'C'
+E52C 50 44 52    6 108 DEFM    "PDR"                       ; String $38 = CPDR
+E52F C3          6 109 DEFB    $80+'C'
+E530 50 49       6 110 DEFM    "PI"                        ; String $39 = CPI
+E532 C3          6 111 DEFB    $80+'C'
+E533 50 49 52    6 112 DEFM    "PIR"                       ; String $3A = CPIR
+E536 C3          6 113 DEFB    $80+'C'
+E537 50 4C       6 114 DEFM    "PL"                        ; String $3B = CPL
+E539 C4          6 115 DEFB    $80+'D'
+E53A 41 41       6 116 DEFM    "AA"                        ; String $3C = DAA
+E53C C4          6 117 DEFB    $80+'D'
+E53D 45 43       6 118 DEFM    "EC"                        ; String $3D = DEC
+E53F C4          6 119 DEFB    $80+'D'
+E540 49          6 120 DEFM    "I"                         ; String $3E = DI
+E541 C5          6 121 DEFB    $80+'E'
+E542 49          6 122 DEFM    "I"                         ; String $3F = EI
+E543 C5          6 123 DEFB    $80+'E'
+E544 58          6 124 DEFM    "X"                         ; String $40 = EX
+E545 C5          6 125 DEFB    $80+'E'
+E546 58 58       6 126 DEFM    "XX"                        ; String $41 = EXX
+E548 C8          6 127 DEFB    $80+'H'
+E549 41 4C 54    6 128 DEFM    "ALT"                       ; String $42 = HALT
+E54C C9          6 129 DEFB    $80+'I'
+E54D 4D          6 130 DEFM    "M"                         ; String $43 = IM
+E54E C9          6 131 DEFB    $80+'I'
+E54F 4E          6 132 DEFM    "N"                         ; String $44 = IN
+E550 C9          6 133 DEFB    $80+'I'
+E551 4E 43       6 134 DEFM    "NC"                        ; String $45 = INC
+E553 C9          6 135 DEFB    $80+'I'
+E554 4E 44       6 136 DEFM    "ND"                        ; String $46 = IND
+E556 C9          6 137 DEFB    $80+'I'
+E557 4E 44 52    6 138 DEFM    "NDR"                       ; String $47 = INDR
+E55A C9          6 139 DEFB    $80+'I'
+E55B 4E 49       6 140 DEFM    "NI"                        ; String $48 = INI
+E55D C9          6 141 DEFB    $80+'I'
+E55E 4E 49 52    6 142 DEFM    "NIR"                       ; String $49 = INIR
+E561 CC          6 143 DEFB    $80+'L'
+E562 44          6 144 DEFM    "D"                         ; String $4A = LD
+E563 CC          6 145 DEFB    $80+'L'
+E564 44 44       6 146 DEFM    "DD"                        ; String $4B = LDD
+E566 CC          6 147 DEFB    $80+'L'
+E567 44 44 52    6 148 DEFM    "DDR"                       ; String $4C = LDDR
+E56A CC          6 149 DEFB    $80+'L'
+E56B 44 49       6 150 DEFM    "DI"                        ; String $4D = LDI
+E56D CC          6 151 DEFB    $80+'L'
+E56E 44 49 52    6 152 DEFM    "DIR"                       ; String $4E = LDIR
+E571 CE          6 153 DEFB    $80+'N'
+E572 45 47       6 154 DEFM    "EG"                        ; String $4F = NEG
+E574 CE          6 155 DEFB    $80+'N'
+E575 4F 50       6 156 DEFM    "OP"                        ; String $50 = NOP
+E577 CF          6 157 DEFB    $80+'O'
+E578 52          6 158 DEFM    "R"                         ; String $51 = OR
+E579 CF          6 159 DEFB    $80+'O'
+E57A 54 44 52    6 160 DEFM    "TDR"                       ; String $52 = OTDR
+E57D CF          6 161 DEFB    $80+'O'
+E57E 54 49 52    6 162 DEFM    "TIR"                       ; String $53 = OTIR
+E581 CF          6 163 DEFB    $80+'O'
+E582 55 54       6 164 DEFM    "UT"                        ; String $54 = OUT
+E584 CF          6 165 DEFB    $80+'O'
+E585 55 54 44    6 166 DEFM    "UTD"                       ; String $55 = OUTD
+E588 CF          6 167 DEFB    $80+'O'
+E589 55 54 49    6 168 DEFM    "UTI"                       ; String $56 = OUTI
+E58C D0          6 169 DEFB    $80+'P'
+E58D 4F 50       6 170 DEFM    "OP"                        ; String $57 = POP
+E58F D0          6 171 DEFB    $80+'P'
+E590 55 53 48    6 172 DEFM    "USH"                       ; String $58 = PUSH
+E593 D2          6 173 DEFB    $80+'R'
+E594 45 53       6 174 DEFM    "ES"                        ; String $59 = RES
+E596 D2          6 175 DEFB    $80+'R'
+E597 4C          6 176 DEFM    "L"                         ; String $5A = RL
+E598 D2          6 177 DEFB    $80+'R'
+E599 4C 41       6 178 DEFM    "LA"                        ; String $5B = RLA
+E59B D2          6 179 DEFB    $80+'R'
+E59C 4C 43       6 180 DEFM    "LC"                        ; String $5C = RLC
+E59E D2          6 181 DEFB    $80+'R'
+E59F 4C 43 41    6 182 DEFM    "LCA"                       ; String $5D = RLCA
+E5A2 D2          6 183 DEFB    $80+'R'
+E5A3 4C 44       6 184 DEFM    "LD"                        ; String $5E = RLD
+E5A5 D2          6 185 DEFB    $80+'R'
+E5A6 52          6 186 DEFM    "R"                         ; String $5F = RR
+E5A7 D2          6 187 DEFB    $80+'R'
+E5A8 52 41       6 188 DEFM    "RA"                        ; String $60 = RRA
+E5AA D2          6 189 DEFB    $80+'R'
+E5AB 52 43       6 190 DEFM    "RC"                        ; String $61 = RRC
+E5AD D2          6 191 DEFB    $80+'R'
+E5AE 52 43 41    6 192 DEFM    "RCA"                       ; String $62 = RRCA
+E5B1 D2          6 193 DEFB    $80+'R'
+E5B2 52 44       6 194 DEFM    "RD"                        ; String $63 = RRD
+E5B4 D3          6 195 DEFB    $80+'S'
+E5B5 42 43       6 196 DEFM    "BC"                        ; String $64 = SBC
+E5B7 D3          6 197 DEFB    $80+'S'
+E5B8 43 46       6 198 DEFM    "CF"                        ; String $65 = SCF
+E5BA D3          6 199 DEFB    $80+'S'
+E5BB 45 54       6 200 DEFM    "ET"                        ; String $66 = SET
+E5BD D3          6 201 DEFB    $80+'S'
+E5BE 4C 41       6 202 DEFM    "LA"                        ; String $67 = SLA
+E5C0 D3          6 203 DEFB    $80+'S'
+E5C1 4C 4C       6 204 DEFM    "LL"                        ; String $68 = SLL
+E5C3 D3          6 205 DEFB    $80+'S'
+E5C4 52 41       6 206 DEFM    "RA"                        ; String $69 = SRA
+E5C6 D3          6 207 DEFB    $80+'S'
+E5C7 52 4C       6 208 DEFM    "RL"                        ; String $6A = SRL
+E5C9 D3          6 209 DEFB    $80+'S'
+E5CA 55 42       6 210 DEFM    "UB"                        ; String $6B = SUB
+E5CC D8          6 211 DEFB    $80+'X'
+E5CD 4F 52       6 212 DEFM    "OR"                        ; String $6C = XOR
+E5CF BF          6 213 DEFB    $80+'?'
+E5D0 3F 3F 3F    6 214 DEFM    "???"                       ; String $6D = ????
+E5D3 C8          6 215 DEFB    $80+'H'                     ; String $6E = H
+E5D4 C9          6 216 DEFB    $80+'I'
+E5D5 58 48       6 217 DEFM    "XH"                        ; String $6F = IXH
+E5D7 C9          6 218 DEFB    $80+'I'
+E5D8 59 48       6 219 DEFM    "YH"                        ; String $70 = IYH
+E5DA CC          6 220 DEFB    $80+'L'                     ; String $71 = L
+E5DB C9          6 221 DEFB    $80+'I'
+E5DC 58 4C       6 222 DEFM    "XL"                        ; String $72 = IXL
+E5DE C9          6 223 DEFB    $80+'I'
+E5DF 59 4C       6 224 DEFM    "YL"                        ; String $73 = IYL
+E5E1 80          6 225 DEFB    $80
+E5E2             6 227 ; Instruction table: (DisInst)
+E5E2             6 228 ; The instruction table definition of the processor's instruction set.
+E5E2             6 229 ; Each instruction is described by 5 bytes:
+E5E2             6 230 ;    Byte 0:  Opcode value
+E5E2             6 231 ;    Byte 1:  Opcode mask
+E5E2             6 232 ;    Byte 2:  Operation string number
+E5E2             6 233 ;    Byte 3:  Operand #1 string number, plus bits 6-7 define precode
+E5E2             6 234 ;    Byte 4:  Operand #2 string number
+E5E2             6 235 ; The precode values code in bits 6-7 are:
+E5E2             6 236 ;    00xx xxxx = No precode
+E5E2             6 237 ;    10xx xxxx = Precode 0xCB
+E5E2             6 238 ;    11xx xxxx = Precode 0xED
+E5E2             6 239 ; Precodes are used by the processor's extended instructions
+E5E2             6 240 DisInst:
+E5E2 88 F8 31 23 6 241 DEFB    $88, $F8, $31, $23, $07     ; Opcode: $88 - ADC  A   ,r2
+E5E6 07          6 241 
+E5E7 CE FF 31 23 6 242 DEFB    $CE, $FF, $31, $23, $02     ; Opcode: $CE - ADC  A   ,n
+E5EB 02          6 242 
+E5EC 4A CF 31 D8 6 243 DEFB    $4A, $CF, $31, $D8, $08     ; Opcode: $4A - ADC  HL  ,dd
+E5F0 08          6 243 
+E5F1 80 F8 32 23 6 244 DEFB    $80, $F8, $32, $23, $07     ; Opcode: $80 - ADD  A   ,r2
+E5F5 07          6 244 
+E5F6 C6 FF 32 23 6 245 DEFB    $C6, $FF, $32, $23, $02     ; Opcode: $C6 - ADD  A   ,n
+E5FA 02          6 245 
+E5FB 09 CF 32 18 6 246 DEFB    $09, $CF, $32, $18, $08     ; Opcode: $09 - ADD  HL  ,dd
+E5FF 08          6 246 
+E600 A0 F8 33 07 6 247 DEFB    $A0, $F8, $33, $07, $01     ; Opcode: $A0 - AND  r2  ,
+E604 01          6 247 
+E605 E6 FF 33 02 6 248 DEFB    $E6, $FF, $33, $02, $01     ; Opcode: $E6 - AND  n   ,
+E609 01          6 248 
+E60A 40 C0 34 8D 6 249 DEFB    $40, $C0, $34, $8D, $07     ; Opcode: $40 - BIT  b   ,r2
+E60E 07          6 249 
+E60F C4 C7 1F 0B 6 250 DEFB    $C4, $C7, $1F, $0B, $04     ; Opcode: $C4 - CALL cc  ,nn
+E613 04          6 250 
+E614 CD FF 1F 04 6 251 DEFB    $CD, $FF, $1F, $04, $01     ; Opcode: $CD - CALL nn  ,
+E618 01          6 251 
+E619 3F FF 35 01 6 252 DEFB    $3F, $FF, $35, $01, $01     ; Opcode: $3F - CCF      ,
+E61D 01          6 252 
+E61E B8 F8 36 07 6 253 DEFB    $B8, $F8, $36, $07, $01     ; Opcode: $B8 - CP   r2  ,
+E622 01          6 253 
+E623 FE FF 36 02 6 254 DEFB    $FE, $FF, $36, $02, $01     ; Opcode: $FE - CP   n   ,
+E627 01          6 254 
+E628 A9 FF 37 C1 6 255 DEFB    $A9, $FF, $37, $C1, $01     ; Opcode: $A9 - CPD      ,
+E62C 01          6 255 
+E62D B9 FF 38 C1 6 256 DEFB    $B9, $FF, $38, $C1, $01     ; Opcode: $B9 - CPDR     ,
+E631 01          6 256 
+E632 A1 FF 39 C1 6 257 DEFB    $A1, $FF, $39, $C1, $01     ; Opcode: $A1 - CPI      ,
+E636 01          6 257 
+E637 B1 FF 3A C1 6 258 DEFB    $B1, $FF, $3A, $C1, $01     ; Opcode: $B1 - CPIR     ,
+E63B 01          6 258 
+E63C 2F FF 3B 01 6 259 DEFB    $2F, $FF, $3B, $01, $01     ; Opcode: $2F - CPL      ,
+E640 01          6 259 
+E641 27 FF 3C 01 6 260 DEFB    $27, $FF, $3C, $01, $01     ; Opcode: $27 - DAA      ,
+E645 01          6 260 
+E646 0B CF 3D 08 6 261 DEFB    $0B, $CF, $3D, $08, $01     ; Opcode: $0B - DEC  dd  ,
+E64A 01          6 261 
+E64B 05 C7 3D 06 6 262 DEFB    $05, $C7, $3D, $06, $01     ; Opcode: $05 - DEC  r   ,
+E64F 01          6 262 
+E650 F3 FF 3E 01 6 263 DEFB    $F3, $FF, $3E, $01, $01     ; Opcode: $F3 - DI       ,
+E654 01          6 263 
+E655 10 FF 1C 02 6 264 DEFB    $10, $FF, $1C, $02, $01     ; Opcode: $10 - DJNZ n   ,
+E659 01          6 264 
+E65A FB FF 3F 01 6 265 DEFB    $FB, $FF, $3F, $01, $01     ; Opcode: $FB - EI       ,
+E65E 01          6 265 
+E65F E3 FF 40 24 6 266 DEFB    $E3, $FF, $40, $24, $18     ; Opcode: $E3 - EX   (SP),HL
+E663 18          6 266 
+E664 08 FF 40 25 6 267 DEFB    $08, $FF, $40, $25, $30     ; Opcode: $08 - EX   AF  ,AF'
+E668 30          6 267 
+E669 EB FF 40 26 6 268 DEFB    $EB, $FF, $40, $26, $18     ; Opcode: $EB - EX   DE  ,HL
+E66D 18          6 268 
+E66E D9 FF 41 01 6 269 DEFB    $D9, $FF, $41, $01, $01     ; Opcode: $D9 - EXX      ,
+E672 01          6 269 
+E673 76 FF 42 01 6 270 DEFB    $76, $FF, $42, $01, $01     ; Opcode: $76 - HALT     ,
+E677 01          6 270 
+E678 46 FF 43 E7 6 271 DEFB    $46, $FF, $43, $E7, $01     ; Opcode: $46 - IM   0   ,
+E67C 01          6 271 
+E67D 56 FF 43 E8 6 272 DEFB    $56, $FF, $43, $E8, $01     ; Opcode: $56 - IM   1   ,
+E681 01          6 272 
+E682 5E FF 43 E9 6 273 DEFB    $5E, $FF, $43, $E9, $01     ; Opcode: $5E - IM   2   ,
+E686 01          6 273 
+E687 40 C7 44 C6 6 274 DEFB    $40, $C7, $44, $C6, $2F     ; Opcode: $40 - IN   r   ,(C)
+E68B 2F          6 274 
+E68C DB FF 44 23 6 275 DEFB    $DB, $FF, $44, $23, $03     ; Opcode: $DB - IN   A   ,(n)
+E690 03          6 275 
+E691 03 CF 45 08 6 276 DEFB    $03, $CF, $45, $08, $01     ; Opcode: $03 - INC  dd  ,
+E695 01          6 276 
+E696 04 C7 45 06 6 277 DEFB    $04, $C7, $45, $06, $01     ; Opcode: $04 - INC  r   ,
+E69A 01          6 277 
+E69B AA FF 46 C1 6 278 DEFB    $AA, $FF, $46, $C1, $01     ; Opcode: $AA - IND      ,
+E69F 01          6 278 
+E6A0 BA FF 47 C1 6 279 DEFB    $BA, $FF, $47, $C1, $01     ; Opcode: $BA - INDR     ,
+E6A4 01          6 279 
+E6A5 A2 FF 48 C1 6 280 DEFB    $A2, $FF, $48, $C1, $01     ; Opcode: $A2 - INI      ,
+E6A9 01          6 280 
+E6AA B2 FF 49 C1 6 281 DEFB    $B2, $FF, $49, $C1, $01     ; Opcode: $B2 - INIR     ,
+E6AE 01          6 281 
+E6AF E9 FF 1E 15 6 282 DEFB    $E9, $FF, $1E, $15, $01     ; Opcode: $E9 - JP   (HL),
+E6B3 01          6 282 
+E6B4 C2 C7 1E 0B 6 283 DEFB    $C2, $C7, $1E, $0B, $04     ; Opcode: $C2 - JP   cc  ,nn
+E6B8 04          6 283 
+E6B9 C3 FF 1E 04 6 284 DEFB    $C3, $FF, $1E, $04, $01     ; Opcode: $C3 - JP   nn  ,
+E6BD 01          6 284 
+E6BE 20 E7 1B 0A 6 285 DEFB    $20, $E7, $1B, $0A, $02     ; Opcode: $20 - JR   c   ,n
+E6C2 02          6 285 
+E6C3 18 FF 1B 02 6 286 DEFB    $18, $FF, $1B, $02, $01     ; Opcode: $18 - JR   n   ,
+E6C7 01          6 286 
+E6C8 40 C0 4A 06 6 287 DEFB    $40, $C0, $4A, $06, $07     ; Opcode: $40 - LD   r   ,r2
+E6CC 07          6 287 
+E6CD 02 FF 4A 2A 6 288 DEFB    $02, $FF, $4A, $2A, $23     ; Opcode: $02 - LD   (BC),A
+E6D1 23          6 288 
+E6D2 12 FF 4A 2B 6 289 DEFB    $12, $FF, $4A, $2B, $23     ; Opcode: $12 - LD   (DE),A
+E6D6 23          6 289 
+E6D7 32 FF 4A 05 6 290 DEFB    $32, $FF, $4A, $05, $23     ; Opcode: $32 - LD   (nn),A
+E6DB 23          6 290 
+E6DC 22 FF 4A 05 6 291 DEFB    $22, $FF, $4A, $05, $18     ; Opcode: $22 - LD   (nn),HL
+E6E0 18          6 291 
+E6E1 43 CF 4A C5 6 292 DEFB    $43, $CF, $4A, $C5, $08     ; Opcode: $43 - LD   (nn),dd
+E6E5 08          6 292 
+E6E6 0A FF 4A 23 6 293 DEFB    $0A, $FF, $4A, $23, $2A     ; Opcode: $0A - LD   A   ,(BC)
+E6EA 2A          6 293 
+E6EB 1A FF 4A 23 6 294 DEFB    $1A, $FF, $4A, $23, $2B     ; Opcode: $1A - LD   A   ,(DE)
+E6EF 2B          6 294 
+E6F0 3A FF 4A 23 6 295 DEFB    $3A, $FF, $4A, $23, $05     ; Opcode: $3A - LD   A   ,(nn)
+E6F4 05          6 295 
+E6F5 2A FF 4A 18 6 296 DEFB    $2A, $FF, $4A, $18, $05     ; Opcode: $2A - LD   HL  ,(nn)
+E6F9 05          6 296 
+E6FA F9 FF 4A 2C 6 297 DEFB    $F9, $FF, $4A, $2C, $18     ; Opcode: $F9 - LD   SP  ,HL
+E6FE 18          6 297 
+E6FF 01 CF 4A 08 6 298 DEFB    $01, $CF, $4A, $08, $04     ; Opcode: $01 - LD   dd  ,nn
+E703 04          6 298 
+E704 4B CF 4A C8 6 299 DEFB    $4B, $CF, $4A, $C8, $05     ; Opcode: $4B - LD   dd  ,(nn)
+E708 05          6 299 
+E709 57 FF 4A E3 6 300 DEFB    $57, $FF, $4A, $E3, $2D     ; Opcode: $57 - LD   A   ,I
+E70D 2D          6 300 
+E70E 5F FF 4A E3 6 301 DEFB    $5F, $FF, $4A, $E3, $2E     ; Opcode: $5F - LD   A   ,R
+E712 2E          6 301 
+E713 47 FF 4A ED 6 302 DEFB    $47, $FF, $4A, $ED, $23     ; Opcode: $47 - LD   I   ,A
+E717 23          6 302 
+E718 4F FF 4A EE 6 303 DEFB    $4F, $FF, $4A, $EE, $23     ; Opcode: $4F - LD   R   ,A
+E71C 23          6 303 
+E71D 06 C7 4A 06 6 304 DEFB    $06, $C7, $4A, $06, $02     ; Opcode: $06 - LD   r   ,n
+E721 02          6 304 
+E722 A8 FF 4B C1 6 305 DEFB    $A8, $FF, $4B, $C1, $01     ; Opcode: $A8 - LDD      ,
+E726 01          6 305 
+E727 B8 FF 4C C1 6 306 DEFB    $B8, $FF, $4C, $C1, $01     ; Opcode: $B8 - LDDR     ,
+E72B 01          6 306 
+E72C A0 FF 4D C1 6 307 DEFB    $A0, $FF, $4D, $C1, $01     ; Opcode: $A0 - LDI      ,
+E730 01          6 307 
+E731 B0 FF 4E C1 6 308 DEFB    $B0, $FF, $4E, $C1, $01     ; Opcode: $B0 - LDIR     ,
+E735 01          6 308 
+E736 44 FF 4F C1 6 309 DEFB    $44, $FF, $4F, $C1, $01     ; Opcode: $44 - NEG      ,
+E73A 01          6 309 
+E73B 00 FF 50 01 6 310 DEFB    $00, $FF, $50, $01, $01     ; Opcode: $00 - NOP      ,
+E73F 01          6 310 
+E740 B0 F8 51 07 6 311 DEFB    $B0, $F8, $51, $07, $01     ; Opcode: $B0 - OR   r2  ,
+E744 01          6 311 
+E745 F6 FF 51 02 6 312 DEFB    $F6, $FF, $51, $02, $01     ; Opcode: $F6 - OR   n   ,
+E749 01          6 312 
+E74A BB FF 52 C1 6 313 DEFB    $BB, $FF, $52, $C1, $01     ; Opcode: $BB - OTDR     ,
+E74E 01          6 313 
+E74F B3 FF 53 C1 6 314 DEFB    $B3, $FF, $53, $C1, $01     ; Opcode: $B3 - OTIR     ,
+E753 01          6 314 
+E754 41 C7 54 EF 6 315 DEFB    $41, $C7, $54, $EF, $06     ; Opcode: $41 - OUT  (C) ,r
+E758 06          6 315 
+E759 D3 FF 54 03 6 316 DEFB    $D3, $FF, $54, $03, $23     ; Opcode: $D3 - OUT  (n) ,A
+E75D 23          6 316 
+E75E AB FF 55 C1 6 317 DEFB    $AB, $FF, $55, $C1, $01     ; Opcode: $AB - OUTD     ,
+E762 01          6 317 
+E763 A3 FF 56 C1 6 318 DEFB    $A3, $FF, $56, $C1, $01     ; Opcode: $A3 - OUTI     ,
+E767 01          6 318 
+E768 C1 CF 57 09 6 319 DEFB    $C1, $CF, $57, $09, $01     ; Opcode: $C1 - POP  qq  ,
+E76C 01          6 319 
+E76D C5 CF 58 09 6 320 DEFB    $C5, $CF, $58, $09, $01     ; Opcode: $C5 - PUSH qq  ,
+E771 01          6 320 
+E772 80 C0 59 8D 6 321 DEFB    $80, $C0, $59, $8D, $07     ; Opcode: $80 - RES  b   ,r2
+E776 07          6 321 
+E777 C9 FF 20 01 6 322 DEFB    $C9, $FF, $20, $01, $01     ; Opcode: $C9 - RET      ,
+E77B 01          6 322 
+E77C C0 C7 20 0B 6 323 DEFB    $C0, $C7, $20, $0B, $01     ; Opcode: $C0 - RET  cc  ,
+E780 01          6 323 
+E781 4D FF 21 C1 6 324 DEFB    $4D, $FF, $21, $C1, $01     ; Opcode: $4D - RETI     ,
+E785 01          6 324 
+E786 45 FF 22 C1 6 325 DEFB    $45, $FF, $22, $C1, $01     ; Opcode: $45 - RETN     ,
+E78A 01          6 325 
+E78B 10 F8 5A 87 6 326 DEFB    $10, $F8, $5A, $87, $01     ; Opcode: $10 - RL   r2  ,
+E78F 01          6 326 
+E790 17 FF 5B 01 6 327 DEFB    $17, $FF, $5B, $01, $01     ; Opcode: $17 - RLA      ,
+E794 01          6 327 
+E795 00 F8 5C 87 6 328 DEFB    $00, $F8, $5C, $87, $01     ; Opcode: $00 - RLC  r2  ,
+E799 01          6 328 
+E79A 07 FF 5D 01 6 329 DEFB    $07, $FF, $5D, $01, $01     ; Opcode: $07 - RLCA     ,
+E79E 01          6 329 
+E79F 6F FF 5E C1 6 330 DEFB    $6F, $FF, $5E, $C1, $01     ; Opcode: $6F - RLD      ,
+E7A3 01          6 330 
+E7A4 18 F8 5F 87 6 331 DEFB    $18, $F8, $5F, $87, $01     ; Opcode: $18 - RR   r2  ,
+E7A8 01          6 331 
+E7A9 1F FF 60 01 6 332 DEFB    $1F, $FF, $60, $01, $01     ; Opcode: $1F - RRA      ,
+E7AD 01          6 332 
+E7AE 08 F8 61 87 6 333 DEFB    $08, $F8, $61, $87, $01     ; Opcode: $08 - RRC  r2  ,
+E7B2 01          6 333 
+E7B3 0F FF 62 01 6 334 DEFB    $0F, $FF, $62, $01, $01     ; Opcode: $0F - RRCA     ,
+E7B7 01          6 334 
+E7B8 67 FF 63 C1 6 335 DEFB    $67, $FF, $63, $C1, $01     ; Opcode: $67 - RRD      ,
+E7BC 01          6 335 
+E7BD C7 C7 1D 0C 6 336 DEFB    $C7, $C7, $1D, $0C, $01     ; Opcode: $C7 - RST  t   ,
+E7C1 01          6 336 
+E7C2 98 F8 64 23 6 337 DEFB    $98, $F8, $64, $23, $07     ; Opcode: $98 - SBC  A   ,r2
+E7C6 07          6 337 
+E7C7 DE FF 64 23 6 338 DEFB    $DE, $FF, $64, $23, $02     ; Opcode: $DE - SBC  A   ,n
+E7CB 02          6 338 
+E7CC 42 CF 64 D8 6 339 DEFB    $42, $CF, $64, $D8, $08     ; Opcode: $42 - SBC  HL  ,dd
+E7D0 08          6 339 
+E7D1 37 FF 65 01 6 340 DEFB    $37, $FF, $65, $01, $01     ; Opcode: $37 - SCF      ,
+E7D5 01          6 340 
+E7D6 C0 C0 66 8D 6 341 DEFB    $C0, $C0, $66, $8D, $07     ; Opcode: $C0 - SET  b   ,r2
+E7DA 07          6 341 
+E7DB 20 F8 67 87 6 342 DEFB    $20, $F8, $67, $87, $01     ; Opcode: $20 - SLA  r2  ,
+E7DF 01          6 342 
+E7E0 30 F8 68 87 6 343 DEFB    $30, $F8, $68, $87, $01     ; Opcode: $30 - SLL  r2  ,
+E7E4 01          6 343 
+E7E5 28 F8 69 87 6 344 DEFB    $28, $F8, $69, $87, $01     ; Opcode: $28 - SRA  r2  ,
+E7E9 01          6 344 
+E7EA 38 F8 6A 87 6 345 DEFB    $38, $F8, $6A, $87, $01     ; Opcode: $38 - SRL  r2  ,
+E7EE 01          6 345 
+E7EF 90 F8 6B 07 6 346 DEFB    $90, $F8, $6B, $07, $01     ; Opcode: $90 - SUB  r2  ,
+E7F3 01          6 346 
+E7F4 D6 FF 6B 02 6 347 DEFB    $D6, $FF, $6B, $02, $01     ; Opcode: $D6 - SUB  n   ,
+E7F8 01          6 347 
+E7F9 A8 F8 6C 07 6 348 DEFB    $A8, $F8, $6C, $07, $01     ; Opcode: $A8 - XOR  r2  ,
+E7FD 01          6 348 
+E7FE EE FF 6C 02 6 349 DEFB    $EE, $FF, $6C, $02, $01     ; Opcode: $EE - XOR  n   ,
+E802 01          6 349 
+E803 00 00 6D 01 6 350 DEFB    $00, $00, $6D, $01, $01     ; Opcode: $00 - ????     ,
+E807 01          6 350 
+E808 00 00 6D C1 6 351 DEFB    $00, $00, $6D, $C1, $01     ; Opcode: $00 - ????     ,
+E80C 01          6 351 
+E80D             6 353 ; Operand table:
+E80D             6 354 ;   Index into table is the operand string number 1 to 13)
+E80D             6 355 ;   Contents: Substitution string number, function bits BIILMM
+E80D             6 356 ;
+E80D             6 357 ; Op  String  Offset  Bracket  Immediate  Substitue     subsLen  subsMask  ->  BIILMM
+E80D             6 358 ;  1  =""     +0      No       No   (00)  No                n/a  n/a           000000
+E80D             6 359 ;  2  ="n"    +1      No       Byte (10)  No                n/a  n/a           010000
+E80D             6 360 ;  3  ="(n)"  +1      Yes      Byte (10)  No                n/a  n/a           110000
+E80D             6 361 ;  4  ="nn"   +2      No       Word (11)  No                n/a  n/a           011000
+E80D             6 362 ;  5  ="(nn)" +2      Yes      Word (11)  No                n/a  n/a           111000
+E80D             6 363 ;  6  ="r"    +0      No       No   (00)  "BCDEHL-A"          1  0x38 (11)     000011
+E80D             6 364 ;  7  ="r2"   +0      No       No   (00)  "BCDEHL-A"          1  0x07 (00)     000000
+E80D             6 365 ;  8  ="dd"   +0      No       No   (00)  "BCDEHLSP"          2  0x30 (10)     000110
+E80D             6 366 ;  9  ="qq"   +0      No       No   (00)  "BCDEHLAF"          2  0x30 (10)     000110
+E80D             6 367 ; 10  ="c"    +0      No       No   (00)  "NZZ NCC "          2  0x18 (01)     000101
+E80D             6 368 ; 11  ="cc"   +0      No       No   (00)  "NZZ NCC POPEP M "  2  0x38 (11)     000111
+E80D             6 369 ; 12  ="t"    +0      No       No   (00)  "0008101820283038"  2  0x38 (11)     000111
+E80D             6 370 ; 13  ="b"    +0      No       No   (00)  "01234567"          1  0x38 (11)     000011
+E80D             6 371 ; Each table entry is coded with the string number plus a byte containing BIILMM bits
+E80D             6 372 ; Length bit is hi for strings with two character substitutions
+E80D             6 373 DisOperandTable:
+E80D 00 00       6 374 DEFB    $00, $00                    ; 0b000000 ;Operand  1 = ""
+E80F 00 10       6 375 DEFB    $00, $10                    ; 0b010000 ;Operand  2 = "n"
+E811 00 30       6 376 DEFB    $00, $30                    ; 0b110000 ;Operand  3 = "(n)"
+E813 00 18       6 377 DEFB    $00, $18                    ; 0b011000 ;Operand  4 = "nn"
+E815 00 38       6 378 DEFB    $00, $38                    ; 0b111000 ;Operand  5 = "(nn)"
+E817 0E 03       6 379 DEFB    $0E, $03                    ; 0b000011 ;Operand  6 = "r"
+E819 0E 00       6 380 DEFB    $0E, $00                    ; 0b000000 ;Operand  7 = "r2"
+E81B 0F 06       6 381 DEFB    $0F, $06                    ; 0b000110 ;Operand  8 = "dd"
+E81D 10 06       6 382 DEFB    $10, $06                    ; 0b000110 ;Operand  9 = "qq"
+E81F 11 05       6 383 DEFB    $11, $05                    ; 0b000101 ;Operand 10 = "c"
+E821 12 07       6 384 DEFB    $12, $07                    ; 0b000111 ;Operand 11 = "cc"
+E823 13 07       6 385 DEFB    $13, $07                    ; 0b000111 ;Operand 12 = "t"
+E825 14 03       6 386 DEFB    $14, $03                    ; 0b000011 ;Operand 13 = "b"
+E827             6 388 ; Mask table
+E827             6 389 ; These are the masks used to separate token values such as register "BCDEHL-A"
+E827             6 390 ; The index into the table is coded in the two mask bits from the above table.
+E827             6 391 DisMaskTable:
+E827 07          6 392 DEFB    $07                         ; Mask type 0
+E828 18          6 393 DEFB    $18                         ; Mask type 1
+E829 30          6 394 DEFB    $30                         ; Mask type 2
+E82A 38          6 395 DEFB    $38                         ; Mask type 3
+E82B             6 398 ; **********************************************************************************************************************
+E82B             6 399 ; **  Added by Antonio Luque for ZX Spectrum disASM                                                                   **
+E82B             6 400 ; **********************************************************************************************************************
+E82B             6 402 ; Strings
+E82B 6D 6F 72 65 6 403 StrMore:            DEFM    "more?"
+E82F 3F          6 403 
+E830             6 404 StrLabels:
+E830 66 72 6F 6D 6 405 DEFM    "from:"
+E834 3A          6 405 
+E835 20 20 74 6F 6 406 DEFM    "  to:"
+E839 3A          6 406 
+E83A             6 408 ; Relative reallocation addresses ** MUST be below StrLabels **
+E83A             6 409 ; This space is reused for the string buffer and the internal stack
+E83A             6 410 Realloc_Addrs:
+E83A             6 411 kStrBuffer:
+E83A 20 00       6 412 DEFW    Realloc_A-START+1
+E83C 23 00       6 413 DEFW    Realloc_B-START+1
+E83E 26 00       6 414 DEFW    Realloc_C-START+1
+E840 2E 00       6 415 DEFW    Realloc_1-START+1
+E842 33 00       6 416 DEFW    Realloc_2-START+1
+E844 36 00       6 417 DEFW    Realloc_3-START+1
+E846 45 00       6 418 DEFW    Realloc_4-START+1
+E848 DC 00       6 419 DEFW    Realloc_5-START+1
+E84A FD 00       6 420 DEFW    Realloc_6-START+1
+E84C 0E 01       6 421 DEFW    Realloc_7-START+1
+E84E 13 01       6 422 DEFW    Realloc_8-START+1
+E850 1B 01       6 423 DEFW    Realloc_9-START+1
+E852 26 01       6 424 DEFW    Realloc_10-START+1
+E854 38 01       6 425 DEFW    Realloc_11-START+1
+E856 63 01       6 426 DEFW    Realloc_12-START+1
+E858 6D 01       6 427 DEFW    Realloc_13-START+1
+E85A 7A 01       6 428 DEFW    Realloc_14-START+1
+E85C 90 01       6 429 DEFW    Realloc_15-START+1
+E85E 95 01       6 430 DEFW    Realloc_16-START+1
+E860 99 01       6 431 DEFW    Realloc_17-START+1
+E862 9E 01       6 432 DEFW    Realloc_18-START+1
+E864 B1 01       6 433 DEFW    Realloc_19-START+1
+E866 C4 01       6 434 DEFW    Realloc_20-START+1
+E868 CD 01       6 435 DEFW    Realloc_21-START+1
+E86A D2 01       6 436 DEFW    Realloc_22-START+1
+E86C D5 01       6 437 DEFW    Realloc_23-START+1
+E86E DF 01       6 438 DEFW    Realloc_24-START+1
+E870 E2 01       6 439 DEFW    Realloc_25-START+1
+E872 E6 01       6 440 DEFW    Realloc_26-START+1
+E874 EF 01       6 441 DEFW    Realloc_27-START+1
+E876 FA 01       6 442 DEFW    Realloc_28-START+1
+E878 15 02       6 443 DEFW    Realloc_29-START+1
+E87A 18 02       6 444 DEFW    Realloc_30-START+1
+E87C 49 02       6 445 DEFW    Realloc_31-START+1
+E87E 4F 02       6 446 DEFW    Realloc_32-START+1
+E880 5A 02       6 447 DEFW    Realloc_33-START+1
+E882 6B 02       6 448 DEFW    Realloc_34-START+2          ; ld ix,nn
+E884 6F 02       6 449 DEFW    Realloc_35-START+2          ; ld (nn),de
+E886 72 02       6 450 DEFW    Realloc_36-START+1
+E888 76 02       6 451 DEFW    Realloc_37-START+1
+E88A 79 02       6 452 DEFW    Realloc_38-START+1
+E88C 84 02       6 453 DEFW    Realloc_39-START+2          ; ld (nn),de
+E88E 8A 02       6 454 DEFW    Realloc_40-START+1
+E890 8E 02       6 455 DEFW    Realloc_41-START+1
+E892 9C 02       6 456 DEFW    Realloc_42-START+1
+E894 C2 02       6 457 DEFW    Realloc_43-START+1
+E896 C6 02       6 458 DEFW    Realloc_44-START+1
+E898 F7 02       6 459 DEFW    Realloc_45-START+1
+E89A FB 02       6 460 DEFW    Realloc_46-START+1
+E89C 00 03       6 461 DEFW    Realloc_47-START+1
+E89E 07 03       6 462 DEFW    Realloc_48-START+1
+E8A0 12 03       6 463 DEFW    Realloc_49-START+1
+E8A2 19 03       6 464 DEFW    Realloc_50-START+1
+E8A4 25 03       6 465 DEFW    Realloc_51-START+1
+E8A6 2B 03       6 466 DEFW    Realloc_52-START+1
+E8A8 41 03       6 467 DEFW    Realloc_53-START+1
+E8AA 44 03       6 468 DEFW    Realloc_54-START+1
+E8AC 49 03       6 469 DEFW    Realloc_55-START+1
+E8AE 62 03       6 470 DEFW    Realloc_56-START+1
+E8B0 00 00       6 471 DEFW    $0000
+E8B2             6 472 ; The stack begins here
+E8B2             6 473 END
