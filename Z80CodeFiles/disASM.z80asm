@@ -14,16 +14,18 @@ Main:
                     ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
                     add     hl, bc                      ; Move HL to absolute address of reallocation addresses
 
+; Avoid 'call Reallocation'
                     #include "Reallocation.z80asm"      ; Realloc. pointers and calls pointed to by the 'Realloc_X' tags
 
 ; Re-entry of program after first execution
 Init:
-                    ld      hl, Init-START              ; HL points to relative address of Init address
-                    add     hl, bc                      ; Move HL to "real" address of Init addresses
-                    ld      sp, hl                      ; Move stack to Init
+                    ld      hl, END-START               ; HL points to relative address of stack address
+                    add     hl, bc                      ; Move HL to absolute address of stack addresses
+                    ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
 
 Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
 
+; Disassembly loop
 DisInstruction:
                     push    bc                          ; Store "to"+1 address
                     push    de                          ; Store string buffer address
@@ -34,12 +36,12 @@ Realloc_3           call    PrintDisassembly-START      ; Print buffer
                     pop     de                          ; Restore string buffer address
                     pop     bc                          ; Restore "to"+1 address
 
-                    and     a                           ; reset carry flag
+                    ;and     a                          ; reset carry flag
                     sbc     hl, bc                      ; check if reach "to"+1 address
                     add     hl, bc
                     jr      c, DisInstruction           ; loop until reach "to"+1 address
 
-                    rst     $08                         ; return to BASIC, "0 OK, "
+                    rst     $08                         ; return to BASIC: "0 OK, "
                     DEFB    $FF
 
 

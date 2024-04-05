@@ -5,12 +5,14 @@
 ; **********************************************************************************************************************
 
 
+
 ; String: Write address, colon, space to string buffer
 ;   On entry: DE = Address
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
 ; Example output: "1234: "
 StrWrAddress:
 Realloc_7           call    StrWrHexWord-START          ; Write start address of this line
+
                     ld      a, ':'
 Realloc_8           call    StrWrChar-START             ; Write colon
                     ld      a, ' '
@@ -19,63 +21,44 @@ Realloc_8           call    StrWrChar-START             ; Write colon
 
 ; String: Write hex word to string buffer
 ;   On entry: DE = Hex word
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
 StrWrHexWord:
                     ld      a, d                        ; Get hi byte
 Realloc_9           call    StrWrHexByte-START          ; Write as two hex digits
                     ld      a, e                        ; Get lo byte
 ; String: Write hex byte to string buffer
 ;   On entry: A = Hex byte
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
 StrWrHexByte:
-                    push    de
-; Utility: Convert byte to nibbles
-                    ld      e, a                        ; Get byte to convert
+                    ld      c, a                        ; Save byte to convert
                     rra                                 ; Shift top nibble to
                     rra                                 ;  botom four bits..
                     rra
                     rra
                     and     %00001111                   ; Mask off unwanted bits
-                    ld      d, a                        ; Store top nibble
-                    ld      a, e                        ; Get byte to convert
+Realloc_10          call    StrWrHexNibble-START        ; Write top nibble
+                    ld      a, c                        ; Restore byte to convert
                     and     %00001111                   ; Mask off unwanted bits
-                    ld      e, a                        ; Store bottom nibble
-                    ld      a, d
-Realloc_10          call    StrWrHexNibble-START        ; Write bottom nibble
-                    ld      a, e
-Realloc_11          call    StrWrHexNibble-START        ; Write top nibble
-                    pop     de
-                    ret
-
-
 ; String: Write hex nibble to string buffer
 ;   On entry: A = Hex nibble
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
+; https://wikiti.brandonw.net/index.php?title=Z80_Optimization#DAA_trick
 StrWrHexNibble:
-                    and     %00001111                   ; Mask off nibble
-                    cp      10                          ; Nibble > 10 ?
-                    jr      c, Skip                     ; No, so skip
-                    add     a, 7                        ; Yes, so add 7
-Skip:
-                    add     a, '0'                      ; Add ASCII '0'
+                    cp      10                          ; if (nibble < 10) then (carry = on)
+                    ccf                                 ; invert carry
+                    adc     a, $30                      ; A = nibble + $30 or $31
+                    daa                                 ; convert nibble to ASCII
 ; String: Write character
 ;   On entry: A = Character to write to string buffer
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
 ; The specified character is writted to the string buffer and a null
 ; terminator added.
 StrWrChar:
                     push    hl                          ; Store HL register
-                    push    af                          ; Store character to write
-iStrStart:   
-                    ld      hl, $0000                   ; Start of current string buffer
-                    inc     (hl)
-                    ld      a, (hl)                     ; Get length of string in buffer
-                    add     a, l                        ; Add A to start of buffer...
-                    ld      l, a                        ;  to get address for next character
-                    jr      nc, Store                   ; Skip if no overflow
-                    inc     h                           ; Overflow so increment hi byte
-Store:
-                    pop     af                          ; Restore character to write
-                    ld      (hl), a                     ; Store character in buffer
+iStrStart:
+                    ld      hl, $0000                   ; HL points to current empty position of the string
+                    ld      (hl), a                     ; Store character at string position
+                    inc     hl                          ; Move HL to next empty position
+Realloc_11          ld      (iStrStart-START+1), hl     ; Update pointer to current empty position
                     pop     hl                          ; Restore HL register
                     ret

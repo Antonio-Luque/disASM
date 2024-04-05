@@ -5,14 +5,13 @@
 
 ; Utility: Find start of specified string in bit 7 delimited list
 ;   On entry: A = String number
-;             HL = Start of string list
 ;   On exit:  HL = Start of string
-;             AF BC DE IX IY I AF' BC' DE' HL' preserved
+;             BC DE IX IY I AF' BC' DE' HL' preserved
 ; Find string A in bit 7 delimited string list
 FindStringInList:
                     push    bc
 
-Realloc_57          ld      hl, DisString-START-1       ; Start of string list
+Realloc_56          ld      hl, DisString-START-1       ; Start of string list
                     ld      b, a                        ; Get string number
 NextChar:
                     inc     hl                          ; Point to next character

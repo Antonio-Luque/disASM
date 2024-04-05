@@ -20,10 +20,10 @@ CHR_FLASH           EQU     $12                         ; Flash attribute
 
 ; IOSupport: Input "from" and "to" addresses from keyboard
 ;  On entry: -
-;  On exit: HL = Start of instruction to be disassembled ("from")
-;           BC = End of instrucction to be disassembled ("to"+1)
-;           DE = Start of string buffer
-;           IX IY I AF' preserved
+;  On exit:  HL = Start of instruction to be disassembled ("from")
+;            BC = End of instrucction to be disassembled ("to"+1)
+;            DE = Start of string buffer
+;            IX IY I AF' preserved
 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
 InputAddresses:
                     call    CLS_LOWER                   ; Clear the lower part of the display
@@ -132,7 +132,7 @@ Next_Address:
 
 ; IOSupport: Print fully disassembly from string buffer
 ;  On entry: -
-;  On exit: -
+;  On exit:  HL IX IY I AF' BC' DE' HL' preserved
 PrintDisassembly:
                     push    hl                          ; Store pointer to next instruction to be disassembled
 
@@ -159,7 +159,7 @@ Wait_More:
                     jr      z, Stop                     ; Yes, return to BASIC
                     call    CL_ALL                      ; Clear display area
 Print:
-Realloc_6           ld      de, kStrBuffer-START+42     ; DE points to string buffer
+Realloc_6           ld      de, kStrBuffer-START        ; DE points to string buffer
                     ld      a, (de)                     ; Get string length
                     inc     de                          ; Move DE to first character of the string
                     ld      b, 0                        ; BC = length of the string
@@ -169,8 +169,8 @@ Realloc_6           ld      de, kStrBuffer-START+42     ; DE points to string bu
                     pop     hl                          ; Restore pointer to next instruction to be disassembled
                     ret
 Stop:
-                    rst     $08                         ; return to BASIC, "9 STOP statement, "
+                    rst     $08                         ; return to BASIC: "9 STOP statement, "
                     DEFB    $08
 Break:
-                    rst     $08                         ; return to BASIC "L BREAK into program, "
+                    rst     $08                         ; return to BASIC: "L BREAK into program, "
                     DEFB    $14
