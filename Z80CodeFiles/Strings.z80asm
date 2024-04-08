@@ -5,26 +5,12 @@
 ; **********************************************************************************************************************
 
 
-
-; String: Write address, colon, space to string buffer
-;   On entry: DE = Address
-;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
-; Example output: "1234: "
-StrWrAddress:
-Realloc_7           call    StrWrHexWord-START          ; Write start address of this line
-
-                    ld      a, ':'
-Realloc_8           call    StrWrChar-START             ; Write colon
-                    ld      a, ' '
-                    jr      StrWrChar                   ; Write space
-
-
 ; String: Write hex word to string buffer
 ;   On entry: DE = Hex word
 ;   On exit:  B DE HL IX IY I AF' BC' DE' HL' preserved
 StrWrHexWord:
                     ld      a, d                        ; Get hi byte
-Realloc_9           call    StrWrHexByte-START          ; Write as two hex digits
+Realloc_7           call    StrWrHexByte-START          ; Write as two hex digits
                     ld      a, e                        ; Get lo byte
 ; String: Write hex byte to string buffer
 ;   On entry: A = Hex byte
@@ -36,7 +22,7 @@ StrWrHexByte:
                     rra
                     rra
                     and     %00001111                   ; Mask off unwanted bits
-Realloc_10          call    StrWrHexNibble-START        ; Write top nibble
+Realloc_8           call    StrWrHexNibble-START        ; Write top nibble
                     ld      a, c                        ; Restore byte to convert
                     and     %00001111                   ; Mask off unwanted bits
 ; String: Write hex nibble to string buffer
@@ -46,7 +32,7 @@ Realloc_10          call    StrWrHexNibble-START        ; Write top nibble
 StrWrHexNibble:
                     cp      10                          ; if (nibble < 10) then (carry = on)
                     ccf                                 ; invert carry
-                    adc     a, $30                      ; A = nibble + $30 or $31
+                    adc     a, '0'                      ; A = nibble + ('0' or '1')
                     daa                                 ; convert nibble to ASCII
 ; String: Write character
 ;   On entry: A = Character to write to string buffer
@@ -59,6 +45,6 @@ iStrStart:
                     ld      hl, $0000                   ; HL points to current empty position of the string
                     ld      (hl), a                     ; Store character at string position
                     inc     hl                          ; Move HL to next empty position
-Realloc_11          ld      (iStrStart-START+1), hl     ; Update pointer to current empty position
+Realloc_9           ld      (iStrStart-START+1), hl     ; Update pointer to current empty position
                     pop     hl                          ; Restore HL register
                     ret

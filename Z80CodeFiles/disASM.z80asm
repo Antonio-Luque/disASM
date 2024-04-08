@@ -19,7 +19,7 @@ Main:
 
 ; Re-entry of program after first execution
 Init:
-                    ld      hl, END-START               ; HL points to relative address of stack address
+                    ld      hl, END-START+1             ; HL points to relative address of stack address
                     add     hl, bc                      ; Move HL to absolute address of stack addresses
                     ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
 
