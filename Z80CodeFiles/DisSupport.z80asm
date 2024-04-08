@@ -266,7 +266,7 @@ SubEnd:
 DisWrInstruction:
                     push    hl                          ; Store start of instruction to be disassembled
 
-; Fill string buffer form address and opcodes with spaces
+; Fill string buffer for address and opcodes with spaces
                     ld      b, 16                       ; B = buffer length (loop counter)
                     inc     de                          ; Move DE to string buffer
 SpcLoop

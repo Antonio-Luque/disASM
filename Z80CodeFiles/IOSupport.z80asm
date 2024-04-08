@@ -85,7 +85,7 @@ Low_Nibble:
                     ld      b, a                        ; Save byte in B
                     ld      a, c                        ; Get current number of nibbles
                     cp      4                           ; Is it 4 ?
-                    jr      z, Next_Address             ; Yes, prepare for next address ("to")
+                    jr      z, Next_Address             ; Yes, prepare for next address
                     rra                                 ; Is it odd ?
                     jr      c, Get_Address              ; Yes, continue with next nibble
                     ld      h, b                        ; Store high byte of address in H
@@ -114,7 +114,7 @@ Cursor_Left:
 Next_Address:
                     ld      l, b                        ; Store low byte of address in L
                     exx                                 ; Store address in HL'
-                    pop     de                          ; Restore next string pointer ("  to")
+                    pop     de                          ; Restore next string pointer
                     pop     bc                          ; Restore current number of inputs
                     djnz    Print_Label                 ; Repeat for each address
 

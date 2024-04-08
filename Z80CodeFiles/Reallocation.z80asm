@@ -41,7 +41,6 @@ Reallocation:
 Re_Entry:
 ; Put 'JP Init' at the start of program for the re-entry
                     ld      a, $C3                      ; 'JP' opcode
-
 Realloc_A           ld      ($0000), a                  ; Put it at program start
 Realloc_B           ld      hl, Init-START              ; HL points to Init
 Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction

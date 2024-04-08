@@ -1,5 +1,5 @@
 
-; File #0: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\disASM.z80asm
+; File #0: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\disASM.z80asm
 
 8000             0 1 ; **********************************************************************************************************************
 8000             0 2 ; **  disASM                                                                                                          **
@@ -15,7 +15,7 @@ E100 21 3A 07    0 14 ld      hl, Realloc_Addrs-START     ; HL points to relativ
 E103 09          0 15 add     hl, bc                      ; Move HL to absolute address of reallocation addresses
 E104             0 17 ; Avoid 'call Reallocation'
 
-; File #1: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Reallocation.z80asm
+; File #1: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\Reallocation.z80asm
 
 E104             1 1 ; **********************************************************************************************************************
 E104             1 2 ; **  Reallocation                                                                        by HiSoft Devpac, (C) 1983  **
@@ -55,11 +55,11 @@ E11D             1 39 ;  have been updated with the corresponding absolute addre
 E11D             1 41 Re_Entry:
 E11D             1 42 ; Put 'JP Init' at the start of program for the re-entry
 E11D 3E C3       1 43 ld      a, $C3                      ; 'JP' opcode
-E11F 32 00 00    1 45 Realloc_A           ld      ($0000), a                  ; Put it at program start
-E122 21 28 00    1 46 Realloc_B           ld      hl, Init-START              ; HL points to Init
-E125 22 01 00    1 47 Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction
+E11F 32 00 00    1 44 Realloc_A           ld      ($0000), a                  ; Put it at program start
+E122 21 28 00    1 45 Realloc_B           ld      hl, Init-START              ; HL points to Init
+E125 22 01 00    1 46 Realloc_C           ld      ($0001), hl                 ; Put Init address as parameter of JP instruction
 
-; File #0: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\disASM.z80asm
+; File #0: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\disASM.z80asm
 
 E128             0 20 ; Re-entry of program after first execution
 E128             0 21 Init:
@@ -83,7 +83,7 @@ E13F CF          0 44 rst     $08                         ; return to BASIC: "0 
 E140 FF          0 45 DEFB    $FF
 E141             0 48 ; Support routines and data
 
-; File #2: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\IOSupport.z80asm
+; File #2: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\IOSupport.z80asm
 
 E141             2 1 ; **********************************************************************************************************************
 E141             2 2 ; **  Input/Output support                                                                          by Antonio Luque  **
@@ -165,7 +165,7 @@ E19A B0          2 84 or      b                           ; Bitwise OR with high
 E19B 47          2 85 ld      b, a                        ; Save byte in B
 E19C 79          2 86 ld      a, c                        ; Get current number of nibbles
 E19D FE 04       2 87 cp      4                           ; Is it 4 ?
-E19F 28 1F       2 88 jr      z, Next_Address             ; Yes, prepare for next address ("to")
+E19F 28 1F       2 88 jr      z, Next_Address             ; Yes, prepare for next address
 E1A1 1F          2 89 rra                                 ; Is it odd ?
 E1A2 38 AE       2 90 jr      c, Get_Address              ; Yes, continue with next nibble
 E1A4 60          2 91 ld      h, b                        ; Store high byte of address in H
@@ -194,7 +194,7 @@ E1C0             2 113 ; Store "from" address and prepare input of "to" address
 E1C0             2 114 Next_Address:
 E1C0 68          2 115 ld      l, b                        ; Store low byte of address in L
 E1C1 D9          2 116 exx                                 ; Store address in HL'
-E1C2 D1          2 117 pop     de                          ; Restore next string pointer ("  to")
+E1C2 D1          2 117 pop     de                          ; Restore next string pointer
 E1C3 C1          2 118 pop     bc                          ; Restore current number of inputs
 E1C4 10 83       2 119 djnz    Print_Label                 ; Repeat for each address
 E1C6             2 121 ; The "from" and "to" addresses are in HL and HL' respectively
@@ -244,7 +244,7 @@ E20B             2 169 Break:
 E20B CF          2 170 rst     $08                         ; return to BASIC: "L BREAK into program, "
 E20C 14          2 171 DEFB    $14
 
-; File #3: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Strings.z80asm
+; File #3: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\Strings.z80asm
 
 E20D             3 1 ; **********************************************************************************************************************
 E20D             3 2 ; **  String support                                                                            by Stephen C Cousins  **
@@ -305,7 +305,7 @@ E237 22 33 01    3 62 Realloc_11          ld      (iStrStart-START+1), hl     ; 
 E23A E1          3 63 pop     hl                          ; Restore HL register
 E23B C9          3 64 ret
 
-; File #4: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\DisSupport.z80asm
+; File #4: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\DisSupport.z80asm
 
 E23C             4 1 ; **********************************************************************************************************************
 E23C             4 2 ; **  Disassembler support                                                                      by Stephen C Cousins  **
@@ -559,7 +559,7 @@ E35F             4 264 ;             HL = Start address of next instruction
 E35F             4 265 ;             IY I AF' BC' DE' HL' preserved
 E35F             4 266 DisWrInstruction:
 E35F E5          4 267 push    hl                          ; Store start of instruction to be disassembled
-E360             4 269 ; Fill string buffer form address and opcodes with spaces
+E360             4 269 ; Fill string buffer for address and opcodes with spaces
 E360 06 10       4 270 ld      b, 16                       ; B = buffer length (loop counter)
 E362 13          4 271 inc     de                          ; Move DE to string buffer
 E363             4 272 SpcLoop
@@ -760,7 +760,7 @@ E460             4 491 ;       print character at (start of Substitution String 
 E460             4 492 ;     Endif
 E460             4 493 ;   End if
 
-; File #5: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\Utilities.z80asm
+; File #5: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\Utilities.z80asm
 
 E460             5 1 ; **********************************************************************************************************************
 E460             5 2 ; **  Utility functions                                                                         by Stephen C Cousins  **
@@ -782,7 +782,7 @@ E46A 10 F9       5 20 djnz    NextChar                    ; Loop back if not the
 E46C C1          5 22 pop     bc
 E46D C9          5 23 ret
 
-; File #6: C:\Users\Antonio\Source\Repos\disASM\Z80CodeFiles\DisData.z80asm
+; File #6: C:\Users\Antonio\source\repos\disASM\Z80CodeFiles\DisData.z80asm
 
 E46E             6 1 ; **********************************************************************************************************************
 E46E             6 2 ; **  Disassembler data                                                                         by Stephen C Cousins  **
