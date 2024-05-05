@@ -63,6 +63,7 @@ iDisIndex:
 GotString:
                     ld      a, l                        ; Get string number
 Realloc_10          call    FindStringInList-START      ; Find start of string A
+
 ; HL now points to disassembler string
 Char:
                     ld      a, (hl)                     ; Get character from string
@@ -131,11 +132,9 @@ DisWrOperand:
 ; Calculate operand table location for this operand and get details
 Realloc_17          ld      hl, DisOperandTable-START-2 ; HL points to DisOperandTable address (-2)
                     add     a, a                        ; Two bytes per entry
-                    add     a, l                        ; Add to start of table
-                    ld      l, a                        ; Store updated lo byte
-                    jr      nc, NoOverFlo               ; Skip if no overflow
-                    inc     h                           ; Overflow so increment hi byte
-NoOverFlo:
+                    ld      d, 0                        ; Move HL to operand address
+                    ld      e, a
+                    add     hl, de
                     ld      e, (hl)                     ; Get substitution string number
                     inc     hl                          ; Point to BIILMM bits
                     ld      d, (hl)                     ; Get BIILMM function bits
@@ -269,9 +268,9 @@ DisWrInstruction:
 ; Fill string buffer for address and opcodes with spaces
                     ld      b, 16                       ; B = buffer length (loop counter)
                     inc     de                          ; Move DE to string buffer
+                    ld      a, ' '                      ; Set space character
 SpcLoop
-                    ld      a, ' '                      ; Put a space on the string buffer
-                    ld      (de), a
+                    ld      (de), a                     ; Put a space on the string buffer
                     inc     de                          ; Move DE to next position of the string buffer
                     djnz    SpcLoop                     ; Loop until fill all buffer positions
 

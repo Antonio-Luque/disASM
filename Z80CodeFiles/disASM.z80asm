@@ -39,7 +39,7 @@ Realloc_3           call    PrintDisassembly-START      ; Print buffer
                     ;and     a                          ; reset carry flag
                     sbc     hl, bc                      ; check if reach "to"+1 address
                     add     hl, bc
-                    jr      c, DisInstruction           ; loop until reach "to"+1 address
+                    jr      nz, DisInstruction          ; loop until reach "to"+1 address
 
                     rst     $08                         ; return to BASIC: "0 OK, "
                     DEFB    $FF
