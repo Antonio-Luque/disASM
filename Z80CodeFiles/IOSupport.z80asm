@@ -98,7 +98,7 @@ Delete:
                     jr      z, Get_Address              ; Yes, nothing to delete
                     rra                                 ; Is it odd ?
                     jr      c, Cursor_Left              ; Yes, move cursor left
-                    ld      a, h                        ; If even, recover byte previous byte from H
+                    ld      a, h                        ; If even, recover previous byte from H
                     and     %11110000                   ;  and store high nibble in B
                     ld      b, a
 Cursor_Left:

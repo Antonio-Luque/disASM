@@ -178,7 +178,7 @@ E1AA B7          2 97 or      a                           ; Is it = 0 ?
 E1AB 28 A5       2 98 jr      z, Get_Address              ; Yes, nothing to delete
 E1AD 1F          2 99 rra                                 ; Is it odd ?
 E1AE 38 04       2 100 jr      c, Cursor_Left              ; Yes, move cursor left
-E1B0 7C          2 101 ld      a, h                        ; If even, recover byte previous byte from H
+E1B0 7C          2 101 ld      a, h                        ; If even, recover previous byte from H
 E1B1 E6 F0       2 102 and     %11110000                   ;  and store high nibble in B
 E1B3 47          2 103 ld      b, a
 E1B4             2 104 Cursor_Left:
