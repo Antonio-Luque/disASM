@@ -63,7 +63,7 @@ E125 22 01 00    1 46 Realloc_C           ld      ($0001), hl                 ; 
 
 E128             0 20 ; Re-entry of program after first execution
 E128             0 21 Init:
-E128 21 AE 07    0 22 ld      hl, END-START+1             ; HL points to relative address of stack address
+E128 21 AC 07    0 22 ld      hl, END-START               ; HL points to relative address of stack address
 E12B 09          0 23 add     hl, bc                      ; Move HL to absolute address of stack addresses
 E12C F9          0 24 ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
 E12D CD 41 00    0 26 Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
@@ -78,7 +78,7 @@ E139 C1          0 37 pop     bc                          ; Restore "to"+1 addre
 E13A             0 39 ;and     a                          ; reset carry flag
 E13A ED 42       0 40 sbc     hl, bc                      ; check if reach "to"+1 address
 E13C 09          0 41 add     hl, bc
-E13D 20 F1       0 42 jr      nz, DisInstruction          ; loop until reach "to"+1 address
+E13D 38 F1       0 42 jr      c, DisInstruction           ; loop until reach "to"+1 address
 E13F CF          0 44 rst     $08                         ; return to BASIC: "0 OK, "
 E140 FF          0 45 DEFB    $FF
 E141             0 48 ; Support routines and data
@@ -1360,6 +1360,5 @@ E8A3 3C 03       6 467 DEFW    Realloc_53-START+1
 E8A5 3F 03       6 468 DEFW    Realloc_54-START+1
 E8A7 44 03       6 469 DEFW    Realloc_55-START+1
 E8A9 5D 03       6 470 DEFW    Realloc_56-START+1
-E8AB 00 00       6 471 DEFW    $0000
-E8AD             6 472 ; The stack begins here
-E8AD             6 473 END
+E8AB 00          6 471 DEFB    $00
+E8AC 00          6 472 END                 DEFB    $00                         ; The stack begins here
