@@ -25,6 +25,7 @@ CHR_FLASH           EQU     $12                         ; Flash attribute
 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
 InputAddresses:
                     call    CLS_LOWER                   ; Clear the lower part of the display
+                    set     3, (iy+48)                  ; Set CAPS LOCK (FLAGS2 system variable)
 
 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
                     ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
@@ -39,7 +40,7 @@ Get_Address:
                     rst     $10
                     ld      a, 1
                     rst     $10
-                    ld      a, 'L'                      ; Print 'L' cursor
+                    ld      a, 'C'                      ; Print 'C3' cursor
                     rst     $10
                     ld      a, CHR_FLASH                ; Deactivate flash attribute
                     rst     $10
@@ -56,11 +57,11 @@ Wait_Key:
                     jr      z, Delete                   ; Yes, perform deleting of previous character
                     cp      '0'                         ; Is it < '0' ?
                     jr      c, Get_Address              ; Yes, repeat key input
-                    cp      'g'                         ; Is it >= 'g' ?
+                    cp      'G'                         ; Is it >= 'g' ?
                     jr      nc, Get_Address             ; Yes, repeat key input
                     cp      ':'                         ; Is it < ':' ?
                     jr      c, Input_OK                 ; Yes, perform key input
-                    cp      'a'                         ; Is it < 'a' ?
+                    cp      'A'                         ; Is it < 'a' ?
                     jr      c, Get_Address              ; Yes, repeat key input
 
 ; ASCII code is between '0' and '9' or between 'a' and 'f'
@@ -70,7 +71,7 @@ Input_OK:
                     sub     '0'                         ; Convert ASCII to decimal number range
                     cp      10                          ; Is it in range 0..9 ?
                     jr      c, High_Nibble              ; Yes, perform high nibble
-                    sub     'a'-'0'-10                  ; No, convert to range A..F
+                    sub     'A'-'0'-10                  ; No, convert to range A..F
 High_Nibble:
                     inc     c                           ; Increment current number of nibbles
                     bit     0, c                        ; Check if number of nibbles is odd or even 
