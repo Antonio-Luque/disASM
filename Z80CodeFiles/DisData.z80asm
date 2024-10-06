@@ -468,6 +468,5 @@ kStrBuffer:
                     DEFW    Realloc_54-START+1
                     DEFW    Realloc_55-START+1
                     DEFW    Realloc_56-START+1
-                    DEFW    $0000
-; The stack begins here
-END
+                    DEFB    $00
+END                 DEFB    $00                         ; The stack begins here

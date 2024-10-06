@@ -19,7 +19,7 @@ Main:
 
 ; Re-entry of program after first execution
 Init:
-                    ld      hl, END-START+1             ; HL points to relative address of stack address
+                    ld      hl, END-START               ; HL points to relative address of stack address
                     add     hl, bc                      ; Move HL to absolute address of stack addresses
                     ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
 
@@ -39,7 +39,7 @@ Realloc_3           call    PrintDisassembly-START      ; Print buffer
                     ;and     a                          ; reset carry flag
                     sbc     hl, bc                      ; check if reach "to"+1 address
                     add     hl, bc
-                    jr      nz, DisInstruction          ; loop until reach "to"+1 address
+                    jr      c, DisInstruction           ; loop until reach "to"+1 address
 
                     rst     $08                         ; return to BASIC: "0 OK, "
                     DEFB    $FF
