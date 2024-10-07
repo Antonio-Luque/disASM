@@ -3,17 +3,6 @@
 ; **********************************************************************************************************************
 
 
-kDisSubsL:          EQU     $0D                         ; Last operand substitution string
-kDisBracHL:         EQU     $15                         ; Bracketed HL
-kDisHL:             EQU     $18                         ; Operation string 'HL'
-kDisJR:             EQU     $1B                         ; Operation string 'JR'
-kDisDJNZ:           EQU     $1C                         ; Operation string 'DJNZ'
-kDisJP:             EQU     $1E                         ; Operation string 'JP'
-kDisH               EQU     $6E                         ; Operation string 'H'
-kDisL               EQU     $71                         ; Operation string 'L'
-kDisOpMask:         EQU     $3F                         ; Operand 1 mask to exclude pre-code bits
-
-
 ; Disassembler string table: (DisString)
 ; This contains many string which are not null terminated and have no length 
 ; value. Instead they are tightly packed with the start of each string 
@@ -224,6 +213,7 @@ DisString:
                     DEFM    "YL"                        ; String $73 = IYL
                     DEFB    $80
 
+
 ; Instruction table: (DisInst)
 ; The instruction table definition of the processor's instruction set.
 ; Each instruction is described by 5 bytes:
@@ -350,6 +340,7 @@ DisInst:
                     DEFB    $00, $00, $6D, $01, $01     ; Opcode: $00 - ????     ,
                     DEFB    $00, $00, $6D, $C1, $01     ; Opcode: $00 - ????     ,
 
+
 ; Operand table:
 ;   Index into table is the operand string number 1 to 13)
 ;   Contents: Substitution string number, function bits BIILMM
@@ -385,6 +376,7 @@ DisOperandTable:
                     DEFB    $13, $07                    ; 0b000111 ;Operand 12 = "t"
                     DEFB    $14, $03                    ; 0b000011 ;Operand 13 = "b"
 
+
 ; Mask table
 ; These are the masks used to separate token values such as register "BCDEHL-A"
 ; The index into the table is coded in the two mask bits from the above table.
@@ -404,6 +396,7 @@ StrMore:            DEFM    "more?"
 StrLabels:
                     DEFM    "from:"
                     DEFM    "  to:"
+
 
 ; Relative reallocation addresses ** MUST be below StrLabels **
 ; This space is reused for the string buffer and the internal stack
@@ -468,5 +461,5 @@ kStrBuffer:
                     DEFW    Realloc_54-START+1
                     DEFW    Realloc_55-START+1
                     DEFW    Realloc_56-START+1
-                    DEFB    $00
-END                 DEFB    $00                         ; The stack begins here
+                    DEFW    $0000                       ; The stack begins here
+END

@@ -10,10 +10,18 @@ kDisImmed:          EQU     4                           ; Immediate value flag
 kDisWord:           EQU     3                           ; Immediate value is word (not byte) flag
 kDisLength:         EQU     2                           ; Substite two characters (not one) flag
 kDisMask:           EQU     3                           ; Mask type 0=0x07,1=0x18,2=0x30,3=0x38
+kDisSubsL:          EQU     $0D                         ; Last operand substitution string
+kDisBracHL:         EQU     $15                         ; Bracketed HL
+kDisHL:             EQU     $18                         ; Operation string 'HL'
+kDisJR:             EQU     $1B                         ; Operation string 'JR'
+kDisDJNZ:           EQU     $1C                         ; Operation string 'DJNZ'
+kDisJP:             EQU     $1E                         ; Operation string 'JP'
+kDisH               EQU     $6E                         ; Operation string 'H'
+kDisL               EQU     $71                         ; Operation string 'L'
+kDisOpMask:         EQU     $3F                         ; Operand 1 mask to exclude pre-code bits
 
 ; Control characters
 CHR_ENTER           EQU     $0D
-
 
 ; Disassembler: Write character to string buffer
 ;   On entry: A = Character to write

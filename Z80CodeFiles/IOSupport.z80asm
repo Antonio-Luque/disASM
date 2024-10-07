@@ -25,6 +25,9 @@ CHR_FLASH           EQU     $12                         ; Flash attribute
 ; Adapted from MONS v4.1 by HiSoft Devpac, (C) 1983
 InputAddresses:
                     call    CLS_LOWER                   ; Clear the lower part of the display
+
+                    bit     3, (iy+48)                  ; Query CAPS LOCK flag (FLAGS2 system variable)
+                    push    af                          ; Store flags to maintain status
                     set     3, (iy+48)                  ; Set CAPS LOCK (FLAGS2 system variable)
 
 Realloc_4           ld      de, StrLabels-START         ; DE points to "from" string
@@ -126,6 +129,11 @@ Next_Address:
                     exx                                 ; HL = "from" address
                     pop     bc                          ; Restore "to" address in BC
                     inc     bc                          ; Increment "to" address
+
+; Maintain CAPS LOCK status
+                    pop     af                          ; Restore flags
+                    ret     nz                          ; If CAPS LOCK is set, return 
+                    res     3, (iy+48)                  ; Reset CAPS LOCK (FLAGS2 system variable)
                     ret
 
 
@@ -152,6 +160,8 @@ Wait_More:
                     cp      ' '                         ; Is it space?
                     jr      z, Break                    ; Yes, return to BASIC
                     cp      'n'                         ; Is it = 'n' ?
+                    jr      z, Stop                     ; Yes, return to BASIC
+                    cp      'N'                         ; Is it = 'N' ?
                     jr      z, Stop                     ; Yes, return to BASIC
                     call    CL_ALL                      ; Clear display area
 Print:
