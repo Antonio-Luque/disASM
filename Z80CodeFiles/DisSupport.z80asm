@@ -389,10 +389,10 @@ GotPrCode:
                     cp      e                           ; Compare table precode with instruction
                     jr      z, Found                    ; Yes, so this is the correct table
 NotFound:
-                    push    bc                          ; Preserve BC
-                    ld      bc, 5                       ; No, so try next table entry
-                    add     ix, bc                      ; Point to next table entry
-                    pop     bc                          ; Restore BC
+                    ld      a, b                        ; Preserve offset to primary opcode
+                    ld      bc, 5                       ; Point to next table entry
+                    add     ix, bc
+                    ld      b, a                        ; Restore offset to primary opcode
                     jr      Table
 
 ; We now have the correct instruction table entry (pointer to by IX)

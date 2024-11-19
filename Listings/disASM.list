@@ -669,10 +669,10 @@ E3F5             4 388 GotPrCode:
 E3F5 BB          4 389 cp      e                           ; Compare table precode with instruction
 E3F6 28 09       4 390 jr      z, Found                    ; Yes, so this is the correct table
 E3F8             4 391 NotFound:
-E3F8 C5          4 392 push    bc                          ; Preserve BC
-E3F9 01 05 00    4 393 ld      bc, 5                       ; No, so try next table entry
-E3FC DD 09       4 394 add     ix, bc                      ; Point to next table entry
-E3FE C1          4 395 pop     bc                          ; Restore BC
+E3F8 78          4 392 ld      a, b                        ; Preserve offset to primary opcode
+E3F9 01 05 00    4 393 ld      bc, 5                       ; Point to next table entry
+E3FC DD 09       4 394 add     ix, bc
+E3FE 47          4 395 ld      b, a                        ; Restore offset to primary opcode
 E3FF 18 D5       4 396 jr      Table
 E401             4 398 ; We now have the correct instruction table entry (pointer to by IX)
 E401             4 399 ; BASIC: (p = iPrecode(n)) And (i And iMask(n)) = (iValue(n) And iMask(n))
