@@ -123,7 +123,7 @@ E15B 3E 12       2 42 ld      a, CHR_FLASH                ; Activate flash attri
 E15D D7          2 43 rst     $10
 E15E 3E 01       2 44 ld      a, 1
 E160 D7          2 45 rst     $10
-E161 3E 43       2 46 ld      a, 'C'                      ; Print 'C3' cursor
+E161 3E 43       2 46 ld      a, 'C'                      ; Print 'C' cursor
 E163 D7          2 47 rst     $10
 E164 3E 12       2 48 ld      a, CHR_FLASH                ; Deactivate flash attribute
 E166 D7          2 49 rst     $10
@@ -140,11 +140,11 @@ E179 FE 0C       2 59 cp      CHR_DELETE                  ; Is it Delete?
 E17B 28 35       2 60 jr      z, Delete                   ; Yes, perform deleting of previous character
 E17D FE 30       2 61 cp      '0'                         ; Is it < '0' ?
 E17F 38 DA       2 62 jr      c, Get_Address              ; Yes, repeat key input
-E181 FE 47       2 63 cp      'G'                         ; Is it >= 'g' ?
+E181 FE 47       2 63 cp      'G'                         ; Is it >= 'G' ?
 E183 30 D6       2 64 jr      nc, Get_Address             ; Yes, repeat key input
 E185 FE 3A       2 65 cp      ':'                         ; Is it < ':' ?
 E187 38 04       2 66 jr      c, Input_OK                 ; Yes, perform key input
-E189 FE 41       2 67 cp      'A'                         ; Is it < 'a' ?
+E189 FE 41       2 67 cp      'A'                         ; Is it < 'A' ?
 E18B 38 CE       2 68 jr      c, Get_Address              ; Yes, repeat key input
 E18D             2 70 ; ASCII code is between '0' and '9' or between 'a' and 'f'
 E18D             2 71 Input_OK:

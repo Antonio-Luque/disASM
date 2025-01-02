@@ -43,7 +43,7 @@ Get_Address:
                     rst     $10
                     ld      a, 1
                     rst     $10
-                    ld      a, 'C'                      ; Print 'C3' cursor
+                    ld      a, 'C'                      ; Print 'C' cursor
                     rst     $10
                     ld      a, CHR_FLASH                ; Deactivate flash attribute
                     rst     $10
@@ -60,11 +60,11 @@ Wait_Key:
                     jr      z, Delete                   ; Yes, perform deleting of previous character
                     cp      '0'                         ; Is it < '0' ?
                     jr      c, Get_Address              ; Yes, repeat key input
-                    cp      'G'                         ; Is it >= 'g' ?
+                    cp      'G'                         ; Is it >= 'G' ?
                     jr      nc, Get_Address             ; Yes, repeat key input
                     cp      ':'                         ; Is it < ':' ?
                     jr      c, Input_OK                 ; Yes, perform key input
-                    cp      'A'                         ; Is it < 'a' ?
+                    cp      'A'                         ; Is it < 'A' ?
                     jr      c, Get_Address              ; Yes, repeat key input
 
 ; ASCII code is between '0' and '9' or between 'a' and 'f'
