@@ -11,7 +11,7 @@
 FindStringInList:
                     push    bc
 
-Realloc_56          ld      hl, DisString-START-1       ; Start of string list
+Realloc_55          ld      hl, DisString-START-1       ; Start of string list
                     ld      b, a                        ; Get string number
 NextChar:
                     inc     hl                          ; Point to next character

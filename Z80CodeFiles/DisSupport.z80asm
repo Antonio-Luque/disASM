@@ -77,9 +77,9 @@ Char:
                     ld      a, (hl)                     ; Get character from string
                     and     %01111111                   ; Mask off string start bit
                     cp      '+'                         ; Is it a '+' sign (displacement) ?
-                    jr      z, Plus                     ; No, so skip to next character
+                    jr      z, Plus                     ; Yes, go to write displacement
 Realloc_11          call    StrWrChar-START             ; Write character
-                    jr      Next                        ; No, so skip to next character
+                    jr      Next                        ; Skip to next character
 ; Encountered a plus sign so expecting to show a displacement
 Plus:      
 iDisOpStr:
@@ -212,8 +212,7 @@ DoneShift:
 ; C is now the offset into the substitute string
 Single:
                     ld      a, e                        ; Substitute string number
-Realloc_27          ld      hl, DisString-START         ; Start of string list
-Realloc_28          call    FindStringInList-START      ; Get start of string (=HL)
+Realloc_27          call    FindStringInList-START      ; Get start of string (=HL)
                     ld      a, c                        ; Offset into string
                     add     a, l                        ; Add to start of string
                     ld      l, a                        ; Store updated lo byte
@@ -245,17 +244,17 @@ iDisOpcode:
                     ld      a, kDisL                    ; Set operation string 'L' 
                     jr      nz, NotStar                 ; If Not 'L', skip
 Substitute:
-Realloc_29          call    DisWrString-START           ; Print string with substitutions
+Realloc_28          call    DisWrString-START           ; Print string with substitutions
                     jr      SubEnd                      ; exit
 NotStar:
                     ld      a, c                        ; Retreive substitute character 
-Realloc_30          call    DisWrChar-START             ; Print character with filters
+Realloc_29          call    DisWrChar-START             ; Print character with filters
                     bit     kDisLength, d               ; Length bit flagged?
                     jr      z, SubEnd                   ; No, so skip
                     inc     hl                          ; Point to second substitute character
                     ld      a, (hl)                     ; Get substitute character
                     cp      '.'                         ; Do not print '.' character
-Realloc_31          call    nz, DisWrChar-START         ; Print character with filters
+Realloc_30          call    nz, DisWrChar-START         ; Print character with filters
 SubEnd:
                     pop     de                          ; Restore registers
                     pop     hl
@@ -282,36 +281,36 @@ SpcLoop
                     inc     de                          ; Move DE to next position of the string buffer
                     djnz    SpcLoop                     ; Loop until fill all buffer positions
 
-Realloc_32          ld      ix, DisInst-START           ; Start of instruction table
-Realloc_33          ld      (iStrStart-START+1), de     ; Initialise string for mnemonic
-Realloc_34          call    DisWrMnemonic-START         ; Disassembly Mnemonic pointed by HL
+Realloc_31          ld      ix, DisInst-START           ; Start of instruction table
+Realloc_32          ld      (iStrStart-START+1), de     ; Initialise string for mnemonic
+Realloc_33          call    DisWrMnemonic-START         ; Disassembly Mnemonic pointed by HL
 
 ; Add disassembly address and opcodes
                     ld      b, a                        ; B = intruction length (loop counter)
 
-Realloc_35          ld      de, kStrBuffer-START        ; DE points to the string for opcodes
-Realloc_36          ld      hl, (iStrStart-START+1)     ; HL points to last character+1 of string for Nnemonic
+Realloc_34          ld      de, kStrBuffer-START        ; DE points to the string for opcodes
+Realloc_35          ld      hl, (iStrStart-START+1)     ; HL points to last character+1 of string for Nnemonic
                     ;and     a                          ; Reset carry
                     sbc     hl, de                      ; Calculate length of total string (+1)
                     ex      de, hl                      ; E = length of total string (+1), move HL to string for opcodes
                     ld      (hl), e                     ; Save length at begin of string
                     dec     (hl)                        ; Adjust string length
                     inc     hl                          ; Move DE to the first character of the string
-Realloc_37          ld      (iStrStart-START+1), hl     ; Initialise string for opcodes
+Realloc_36          ld      (iStrStart-START+1), hl     ; Initialise string for opcodes
 
                     pop     hl                          ; Restore current instruction address
 
                     ld      d, h                        ; Get start of instruction..
                     ld      e, l
-Realloc_38          call    StrWrHexWord-START          ; Write start address of this line
+Realloc_37          call    StrWrHexWord-START          ; Write start address of this line
                     ld      a, ':'
-Realloc_39          call    StrWrChar-START             ; Write colon
+Realloc_38          call    StrWrChar-START             ; Write colon
                     ld      a, ' '
-Realloc_40          call    StrWrChar-START             ; Write space
+Realloc_39          call    StrWrChar-START             ; Write space
 
 Opcode:
                     ld      a, (hl)                     ; Get instruction opcode
-Realloc_41          call    StrWrHexByte-START          ; Write as hex byte
+Realloc_40          call    StrWrHexByte-START          ; Write as hex byte
                     inc     hl                          ; Point to next byte 
                     djnz    Opcode                      ; Loop until all hex bytes written
                     ret
@@ -332,7 +331,7 @@ DisWrMnemonic:
                     pop     iy                          ;  to IY
 
                     xor     a
-Realloc_42          ld      hl, iDisIndex-START+1       ; Clear index instruction opcode
+Realloc_41          ld      hl, iDisIndex-START+1       ; Clear index instruction opcode
                     ld      (hl), a
                     ld      b, a                        ; Offset to instruction's primary opcode
                     ld      e, a                        ; Clear prefix for extended instructions
@@ -362,10 +361,10 @@ Extend:
                     jr      z, ExNoIndx                 ; No, so skip
                     inc     a                           ; Yes, skip index displacement byte
 ExNoIndx:
-Realloc_43          call    DisGetOpcode-START
+Realloc_42          call    DisGetOpcode-START
 NotExtend:
                     ld      d, a                        ; Remember instruction's primary opcode
-Realloc_44          ld      (iDisOpcode-START+1), a     ; Store primary opcode
+Realloc_43          ld      (iDisOpcode-START+1), a     ; Store primary opcode
 
 ; Locate instruction table entry for current instruction
 ; BASIC: (i And iMask(n)) = (iValue(n) And iMask(n)) ?
@@ -399,17 +398,17 @@ NotFound:
 ; BASIC: (p = iPrecode(n)) And (i And iMask(n)) = (iValue(n) And iMask(n))
 Found:
                     ld      a, (ix+2)                   ; Get operation string number
-Realloc_45          ld      hl, iDisOpStr-START+1       ; Store operation string number
+Realloc_44          ld      hl, iDisOpStr-START+1       ; Store operation string number
                     ld      (hl), a
-Realloc_46          call    DisWrString-START           ; Write operation string
+Realloc_45          call    DisWrString-START           ; Write operation string
 
                     ld      a, ' '                      ; Write space
-Realloc_47          call    StrWrChar-START
+Realloc_46          call    StrWrChar-START
 
 ; BASIC: Operand sString(iOperand1(n)), t
                     ld      a, (ix+3)                   ; Get operand #1 string number
                     ld      c, d                        ; Get primary opcode value
-Realloc_48          call    DisWrOperand-START
+Realloc_47          call    DisWrOperand-START
 
 ; BASIC: Operand sString(iOperand2(n)), t
                     ld      a, (ix+4)                   ; Get operand #2 string number
@@ -417,11 +416,11 @@ Realloc_48          call    DisWrOperand-START
                     jr      z, NoOp2                    ; Yes, so skip this operand
 
                     ld      a, ','                      ; Get comma character
-Realloc_49          call    StrWrChar-START             ; Write comma to string
+Realloc_48          call    StrWrChar-START             ; Write comma to string
 
                     ld      a, (ix+4)                   ; Get operand #2 string number
                     ld      c, d                        ; Get primary opcode value
-Realloc_50          call    DisWrOperand-START
+Realloc_49          call    DisWrOperand-START
 NoOp2:
 ; If relative jump show absolute address in brackets
                     ld      a, (hl)                     ; Get operation string number
@@ -430,11 +429,11 @@ NoOp2:
                     cp      kDisDJNZ                    ; DJNZ instruction?
                     jr      nz, NotRel                  ; No so skip
 Rel:
-Realloc_51          ld      hl, (iStrStart+1-START)     ; An ugly way to only show absolute address
+Realloc_50          ld      hl, (iStrStart+1-START)     ; An ugly way to only show absolute address
                     dec     hl                          ;  (by Antonio Luque)
                     dec     hl
                     dec     hl
-Realloc_52          ld      (iStrStart-START+1), hl
+Realloc_51          ld      (iStrStart-START+1), hl
 iDisImmed:
                     ld      a, $00                      ; Get immediate value from instruction
                     ld      e, a                        ; Get displacement lo (signed byte)
@@ -452,13 +451,13 @@ JRadd:
                     ld      e, l                        ; Get destination address lo byte
 
                     ld      a, '$'
-Realloc_53          call    StrWrChar-START             ; Write '$'
-Realloc_54          call    StrWrHexWord-START          ; Write hex word to string
+Realloc_52          call    StrWrChar-START             ; Write '$'
+Realloc_53          call    StrWrHexWord-START          ; Write hex word to string
 
 NotRel:
 ; Finish building mnemonic string
                     ld      a, CHR_ENTER
-Realloc_55          call    StrWrChar-START
+Realloc_54          call    StrWrChar-START
 
                     ld      a, b                        ; Get offset into instruction
                     inc     a                           ; Increment to give instruction length

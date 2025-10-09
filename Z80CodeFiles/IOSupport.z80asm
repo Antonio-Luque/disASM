@@ -67,7 +67,7 @@ Wait_Key:
                     cp      'A'                         ; Is it < 'A' ?
                     jr      c, Get_Address              ; Yes, repeat key input
 
-; ASCII code is between '0' and '9' or between 'a' and 'f'
+; ASCII code is between '0' and '9' or between 'A' and 'F'
 Input_OK:
                     rst     $10                         ; Print ASCII code
                     ld      a, (LAST_K)                 ; Get ASCII code of key pressed in A
