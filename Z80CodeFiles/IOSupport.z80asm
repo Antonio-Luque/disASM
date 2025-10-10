@@ -34,7 +34,7 @@ Realloc_4           ld      de, StrLabels-START         ; DE points to "from" st
                     ld      b, 2                        ; Number of inputs: "from" and "to" (loop counter)
 Print_Label:
                     push    bc                          ; Store current number of inputs
-                    ld      bc, 5                       ; Length of string
+                    ld      bc, 7                       ; Length of string
                     call    PR_STRING                   ; Print string
                     push    de                          ; Store next string pointer
                     inc     c                           ; Set C = 0 (current number of nibbles)
@@ -135,48 +135,3 @@ Next_Address:
                     ret     nz                          ; If CAPS LOCK is set, return 
                     res     3, (iy+48)                  ; Reset CAPS LOCK (FLAGS2 system variable)
                     ret
-
-
-; IOSupport: Print fully disassembly from string buffer
-;  On entry: -
-;  On exit:  HL IX IY I AF' BC' DE' HL' preserved
-PrintDisassembly:
-                    push    hl                          ; Store pointer to next instruction to be disassembled
-
-                    ld      a, 2                        ; Set bottom line limit to print (top line = 24)
-                    cp      (iy+79)                     ; Compares with current line number (S_POSN+1 system varible)
-                    jr      nz, Print                   ; If limit not reached then print buffer
-
-                    dec     a                           ; Open channel #1 (last two lines)
-                    call    CHAN_OPEN
-Realloc_5           ld      de, StrMore-START           ; DE points to "more?" string
-                    ld      bc, 5                       ; BC = length of string
-                    call    PR_STRING                   ; Print string
-                    res     5, (iy+1)                   ; Set key pressed flag = off
-Wait_More:
-                    bit     5, (iy+1)                   ; Key pressed?
-                    jr      z, Wait_More                ; No, repeat until key pressed
-                    ld      a, (LAST_K)                 ; Get ASCII code of key pressed
-                    cp      ' '                         ; Is it space?
-                    jr      z, Break                    ; Yes, return to BASIC
-                    cp      'n'                         ; Is it = 'n' ?
-                    jr      z, Stop                     ; Yes, return to BASIC
-                    cp      'N'                         ; Is it = 'N' ?
-                    jr      z, Stop                     ; Yes, return to BASIC
-                    call    CL_ALL                      ; Clear display area
-Print:
-Realloc_6           ld      de, kStrBuffer-START        ; DE points to string buffer
-                    ld      a, (de)                     ; Get string length
-                    inc     de                          ; Move DE to first character of the string
-                    ld      b, 0                        ; BC = length of the string
-                    ld      c, a
-                    call    PR_STRING                   ; Print string
-
-                    pop     hl                          ; Restore pointer to next instruction to be disassembled
-                    ret
-Stop:
-                    rst     $08                         ; return to BASIC: "9 STOP statement, "
-                    DEFB    $08
-Break:
-                    rst     $08                         ; return to BASIC: "L BREAK into program, "
-                    DEFB    $14

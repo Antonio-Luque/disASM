@@ -8,12 +8,10 @@
 ; **********************************************************************************************************************
 
 
-START               ORG     $E100
-
+START               ORG     $E100                       ; Default address, can be reallocated below the System Variables
 Main:
                     ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
                     add     hl, bc                      ; Move HL to absolute address of reallocation addresses
-
 ; Avoid 'call Reallocation'
                     #include "Reallocation.z80asm"      ; Realloc. pointers and calls pointed to by the 'Realloc_X' tags
 
@@ -22,7 +20,6 @@ Init:
                     ld      hl, END-START               ; HL points to relative address of stack address
                     add     hl, bc                      ; Move HL to absolute address of stack addresses
                     ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
-
 Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
 
 ; Disassembly loop
@@ -31,17 +28,25 @@ DisInstruction:
                     push    de                          ; Store string buffer address
 
 Realloc_2           call    DisWrInstruction-START      ; Write fully disassembly instruction in buffer
-Realloc_3           call    PrintDisassembly-START      ; Print buffer
+Realloc_3           ld      de, kStrBuffer-START        ; DE points to string buffer
+                    ld      a, (de)                     ; Get string length
+                    ld      b, a                        ; B = length of the string
+Print_Loop:
+                    inc     de                          ; Move DE to next character of the string
+                    ld      a, (de)                     ; Get character from buffer
+                    rst     $10                         ; Print character
+                    djnz    Print_Loop                  ; Loop until end of string
 
                     pop     de                          ; Restore string buffer address
                     pop     bc                          ; Restore "to"+1 address
 
-                    ;and     a                          ; reset carry flag
+                    and     a                           ; reset carry flag
                     sbc     hl, bc                      ; check if reach "to"+1 address
                     add     hl, bc
                     jr      c, DisInstruction           ; loop until reach "to"+1 address
 
-                    rst     $08                         ; return to BASIC: "0 OK, "
+; Return to BASIC: "0 OK, "
+                    rst     $08
                     DEFB    $FF
 
 

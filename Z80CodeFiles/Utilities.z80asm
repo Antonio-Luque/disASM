@@ -11,11 +11,11 @@
 FindStringInList:
                     push    bc
 
-Realloc_55          ld      hl, DisString-START-1       ; Start of string list
+Realloc_53          ld      hl, DisString-START         ; Start of string list
                     ld      b, a                        ; Get string number
 NextChar:
+                    bit     7, (hl)                     ; End of string?
                     inc     hl                          ; Point to next character
-                    bit     7, (hl)                     ; Start of new string?
                     jr      z, NextChar                 ; No, so go get next character
                     djnz    NextChar                    ; Loop back if not the right string
 

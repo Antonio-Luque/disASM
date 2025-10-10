@@ -5,213 +5,125 @@
 
 ; Disassembler string table: (DisString)
 ; This contains many string which are not null terminated and have no length 
-; value. Instead they are tightly packed with the start of each string 
-; indicated by the first character having bit 7 set.
+; value. Instead they are tightly packed with the end of each string 
+; indicated by the last character having bit 7 set.
 DisString:
-                    DEFB    $80                         ; String $01 = 
-                    DEFB    $80+'n'                     ; String $02 = n
-                    DEFB    $80+'('
-                    DEFM    "n)"                        ; String $03 = (n)
-                    DEFB    $80+'n','n'                 ; String $04 = nn
-                    DEFB    $80+'('
-                    DEFM    "nn)"                       ; String $05 = (nn)
-                    DEFB    $80+'r'                     ; String $06 = r
-                    DEFB    $80+'r','2'                 ; String $07 = r2
-                    DEFB    $80+'d','d'                 ; String $08 = dd
-                    DEFB    $80+'q','q'                 ; String $09 = qq
-                    DEFB    $80+'c'                     ; String $0A = c
-                    DEFB    $80+'c','c'                 ; String $0B = cc
-                    DEFB    $80+'t'                     ; String $0C = t
-                    DEFB    $80+'b'                     ; String $0D = b
-                    DEFB    $80+'B'
-                    DEFM    "CDEHL-A"                   ; String $0E = BCDEHL-A
-                    DEFB    $80+'B'
-                    DEFM    "CDE**SP"                   ; String $0F = BCDE**SP
-                    DEFB    $80+'B'
-                    DEFM    "CDE**AF"                   ; String $10 = BCDE**AF
-                    DEFB    $80+'N'
-                    DEFM    "ZZ.NCC."                   ; String $11 = NZZ.NCC.
-                    DEFB    $80+'N'
-                    DEFM    "ZZ.NCC.POPEP.M."           ; String $12 = NZZ.NCC.POPEP.M.
-                    DEFB    $80+'0'
-                    DEFM    "008162432404856"           ; String $13 = 0008101820283038
-                    DEFB    $80+'0'
-                    DEFM    "1234567"                   ; String $14 = 01234567
-                    DEFB    $80+'('
-                    DEFM    "HL)"                       ; String $15 = (HL)
-                    DEFB    $80+'('
-                    DEFM    "IX+"                       ; String $16 = (IX+
-                    DEFB    $80+'('
-                    DEFM    "IY+"                       ; String $17 = (IY+
-                    DEFB    $80+'H','L'                 ; String $18 = HL
-                    DEFB    $80+'I','X'                 ; String $19 = IX
-                    DEFB    $80+'I','Y'                 ; String $1A = IY
-                    DEFB    $80+'J','R'                 ; String $1B = JR
-                    DEFB    $80+'D'
-                    DEFM    "JNZ"                       ; String $1C = DJNZ
-                    DEFB    $80+'R'
-                    DEFM    "ST"                        ; String $1D = RST
-                    DEFB    $80+'J','P'                 ; String $1E = JP
-                    DEFB    $80+'C'
-                    DEFM    "ALL"                       ; String $1F = CALL
-                    DEFB    $80+'R'
-                    DEFM    "ET"                        ; String $20 = RET
-                    DEFB    $80+'R'
-                    DEFM    "ETI"                       ; String $21 = RETI
-                    DEFB    $80+'R'
-                    DEFM    "ETN"                       ; String $22 = RETN
-                    DEFB    $80+'A'                     ; String $23 = A
-                    DEFB    $80+'('
-                    DEFM    "SP)"                       ; String $24 = (SP)
-                    DEFB    $80+'A','F'                 ; String $25 = AF
-                    DEFB    $80+'D','E'                 ; String $26 = DE
-                    DEFB    $80+'0'                     ; String $27 = 0
-                    DEFB    $80+'1'                     ; String $28 = 1
-                    DEFB    $80+'2'                     ; String $29 = 2
-                    DEFB    $80+'('
-                    DEFM    "BC)"                       ; String $2A = (BC)
-                    DEFB    $80+'('
-                    DEFM    "DE)"                       ; String $2B = (DE)
-                    DEFB    $80+'S','P'                 ; String $2C = SP
-                    DEFB    $80+'I'                     ; String $2D = I
-                    DEFB    $80+'R'                     ; String $2E = R
-                    DEFB    $80+'('
-                    DEFM    "C)"                        ; String $2F = (C)
-                    DEFB    $80+'A'
-                    DEFM    "F'"                        ; String $30 = AF'
-                    DEFB    $80+'A'
-                    DEFM    "DC"                        ; String $31 = ADC
-                    DEFB    $80+'A'
-                    DEFM    "DD"                        ; String $32 = ADD
-                    DEFB    $80+'A'
-                    DEFM    "ND"                        ; String $33 = AND
-                    DEFB    $80+'B'
-                    DEFM    "IT"                        ; String $34 = BIT
-                    DEFB    $80+'C'
-                    DEFM    "CF"                        ; String $35 = CCF
-                    DEFB    $80+'C'
-                    DEFM    "P"                         ; String $36 = CP
-                    DEFB    $80+'C'                       
-                    DEFM    "PD"                        ; String $37 = CPD
-                    DEFB    $80+'C'                       
-                    DEFM    "PDR"                       ; String $38 = CPDR
-                    DEFB    $80+'C'                       
-                    DEFM    "PI"                        ; String $39 = CPI
-                    DEFB    $80+'C'                       
-                    DEFM    "PIR"                       ; String $3A = CPIR
-                    DEFB    $80+'C'                       
-                    DEFM    "PL"                        ; String $3B = CPL
-                    DEFB    $80+'D'                       
-                    DEFM    "AA"                        ; String $3C = DAA
-                    DEFB    $80+'D'                       
-                    DEFM    "EC"                        ; String $3D = DEC
-                    DEFB    $80+'D'                       
-                    DEFM    "I"                         ; String $3E = DI
-                    DEFB    $80+'E'                       
-                    DEFM    "I"                         ; String $3F = EI
-                    DEFB    $80+'E'                       
-                    DEFM    "X"                         ; String $40 = EX
-                    DEFB    $80+'E'                       
-                    DEFM    "XX"                        ; String $41 = EXX
-                    DEFB    $80+'H'                       
-                    DEFM    "ALT"                       ; String $42 = HALT
-                    DEFB    $80+'I'                       
-                    DEFM    "M"                         ; String $43 = IM
-                    DEFB    $80+'I'                       
-                    DEFM    "N"                         ; String $44 = IN
-                    DEFB    $80+'I'                       
-                    DEFM    "NC"                        ; String $45 = INC
-                    DEFB    $80+'I'                       
-                    DEFM    "ND"                        ; String $46 = IND
-                    DEFB    $80+'I'                       
-                    DEFM    "NDR"                       ; String $47 = INDR
-                    DEFB    $80+'I'                       
-                    DEFM    "NI"                        ; String $48 = INI
-                    DEFB    $80+'I'                       
-                    DEFM    "NIR"                       ; String $49 = INIR
-                    DEFB    $80+'L'                       
-                    DEFM    "D"                         ; String $4A = LD
-                    DEFB    $80+'L'                       
-                    DEFM    "DD"                        ; String $4B = LDD
-                    DEFB    $80+'L'                       
-                    DEFM    "DDR"                       ; String $4C = LDDR
-                    DEFB    $80+'L'                       
-                    DEFM    "DI"                        ; String $4D = LDI
-                    DEFB    $80+'L'                       
-                    DEFM    "DIR"                       ; String $4E = LDIR
-                    DEFB    $80+'N'                       
-                    DEFM    "EG"                        ; String $4F = NEG
-                    DEFB    $80+'N'                       
-                    DEFM    "OP"                        ; String $50 = NOP
-                    DEFB    $80+'O'                       
-                    DEFM    "R"                         ; String $51 = OR
-                    DEFB    $80+'O'                       
-                    DEFM    "TDR"                       ; String $52 = OTDR
-                    DEFB    $80+'O'                       
-                    DEFM    "TIR"                       ; String $53 = OTIR
-                    DEFB    $80+'O'                       
-                    DEFM    "UT"                        ; String $54 = OUT
-                    DEFB    $80+'O'                       
-                    DEFM    "UTD"                       ; String $55 = OUTD
-                    DEFB    $80+'O'                       
-                    DEFM    "UTI"                       ; String $56 = OUTI
-                    DEFB    $80+'P'                       
-                    DEFM    "OP"                        ; String $57 = POP
-                    DEFB    $80+'P'                       
-                    DEFM    "USH"                       ; String $58 = PUSH
-                    DEFB    $80+'R'                       
-                    DEFM    "ES"                        ; String $59 = RES
-                    DEFB    $80+'R'                       
-                    DEFM    "L"                         ; String $5A = RL
-                    DEFB    $80+'R'                       
-                    DEFM    "LA"                        ; String $5B = RLA
-                    DEFB    $80+'R'                       
-                    DEFM    "LC"                        ; String $5C = RLC
-                    DEFB    $80+'R'                       
-                    DEFM    "LCA"                       ; String $5D = RLCA
-                    DEFB    $80+'R'                       
-                    DEFM    "LD"                        ; String $5E = RLD
-                    DEFB    $80+'R'                       
-                    DEFM    "R"                         ; String $5F = RR
-                    DEFB    $80+'R'                       
-                    DEFM    "RA"                        ; String $60 = RRA
-                    DEFB    $80+'R'                       
-                    DEFM    "RC"                        ; String $61 = RRC
-                    DEFB    $80+'R'                       
-                    DEFM    "RCA"                       ; String $62 = RRCA
-                    DEFB    $80+'R'                       
-                    DEFM    "RD"                        ; String $63 = RRD
-                    DEFB    $80+'S'                       
-                    DEFM    "BC"                        ; String $64 = SBC
-                    DEFB    $80+'S'                       
-                    DEFM    "CF"                        ; String $65 = SCF
-                    DEFB    $80+'S'                       
-                    DEFM    "ET"                        ; String $66 = SET
-                    DEFB    $80+'S'                       
-                    DEFM    "LA"                        ; String $67 = SLA
-                    DEFB    $80+'S'                       
-                    DEFM    "LL"                        ; String $68 = SLL
-                    DEFB    $80+'S'                       
-                    DEFM    "RA"                        ; String $69 = SRA
-                    DEFB    $80+'S'                       
-                    DEFM    "RL"                        ; String $6A = SRL
-                    DEFB    $80+'S'                       
-                    DEFM    "UB"                        ; String $6B = SUB
-                    DEFB    $80+'X'                       
-                    DEFM    "OR"                        ; String $6C = XOR
-                    DEFB    $80+'?'                       
-                    DEFM    "???"                       ; String $6D = ????
-                    DEFB    $80+'H'                     ; String $6E = H
-                    DEFB    $80+'I'
-                    DEFM    "XH"                        ; String $6F = IXH
-                    DEFB    $80+'I'
-                    DEFM    "YH"                        ; String $70 = IYH
-                    DEFB    $80+'L'                     ; String $71 = L
-                    DEFB    $80+'I'
-                    DEFM    "XL"                        ; String $72 = IXL
-                    DEFB    $80+'I'
-                    DEFM    "YL"                        ; String $73 = IYL
                     DEFB    $80
+                    DEFC    "\0"                        ; String $01 = 
+                    DEFC    "n"                         ; String $02 = n
+                    DEFC    "(n)"                       ; String $03 = (n)
+                    DEFC    "nn"                        ; String $04 = nn
+                    DEFC    "(nn)"                      ; String $05 = (nn)
+                    DEFC    "r"                         ; String $06 = r
+                    DEFC    "r2"                        ; String $07 = r2
+                    DEFC    "dd"                        ; String $08 = dd
+                    DEFC    "qq"                        ; String $09 = qq
+                    DEFC    "c"                         ; String $0A = c
+                    DEFC    "cc"                        ; String $0B = cc
+                    DEFC    "t"                         ; String $0C = t
+                    DEFC    "b"                         ; String $0D = b
+                    DEFC    "BCDEHL-A"                  ; String $0E = BCDEHL-A
+                    DEFC    "BCDE**SP"                  ; String $0F = BCDE**SP
+                    DEFC    "BCDE**AF"                  ; String $10 = BCDE**AF
+                    DEFC    "NZZ.NCC."                  ; String $11 = NZZ.NCC.
+                    DEFC    "NZZ.NCC.POPEP.M."          ; String $12 = NZZ.NCC.POPEP.M.
+                    DEFC    "0008162432404856"          ; String $13 = 0008101820283038
+                    DEFC    "01234567"                  ; String $14 = 01234567
+                    DEFC    "(HL)"                      ; String $15 = (HL)
+                    DEFC    "(IX+"                      ; String $16 = (IX+
+                    DEFC    "(IY+"                      ; String $17 = (IY+
+                    DEFC    "HL"                        ; String $18 = HL
+                    DEFC    "IX"                        ; String $19 = IX
+                    DEFC    "IY"                        ; String $1A = IY
+                    DEFC    "JR"                        ; String $1B = JR
+                    DEFC    "DJNZ"                      ; String $1C = DJNZ
+                    DEFC    "RST"                       ; String $1D = RST
+                    DEFC    "JP"                        ; String $1E = JP
+                    DEFC    "CALL"                      ; String $1F = CALL
+                    DEFC    "RET"                       ; String $20 = RET
+                    DEFC    "RETI"                      ; String $21 = RETI
+                    DEFC    "RETN"                      ; String $22 = RETN
+                    DEFC    "A"                         ; String $23 = A
+                    DEFC    "(SP)"                      ; String $24 = (SP)
+                    DEFC    "AF"                        ; String $25 = AF
+                    DEFC    "DE"                        ; String $26 = DE
+                    DEFC    "0"                         ; String $27 = 0
+                    DEFC    "1"                         ; String $28 = 1
+                    DEFC    "2"                         ; String $29 = 2
+                    DEFC    "(BC)"                      ; String $2A = (BC)
+                    DEFC    "(DE)"                      ; String $2B = (DE)
+                    DEFC    "SP"                        ; String $2C = SP
+                    DEFC    "I"                         ; String $2D = I
+                    DEFC    "R"                         ; String $2E = R
+                    DEFC    "(C)"                       ; String $2F = (C)
+                    DEFC    "AF'"                       ; String $30 = AF'
+                    DEFC    "ADC"                       ; String $31 = ADC
+                    DEFC    "ADD"                       ; String $32 = ADD
+                    DEFC    "AND"                       ; String $33 = AND
+                    DEFC    "BIT"                       ; String $34 = BIT
+                    DEFC    "CCF"                       ; String $35 = CCF
+                    DEFC    "CP"                        ; String $36 = CP
+                    DEFC    "CPD"                       ; String $37 = CPD
+                    DEFC    "CPDR"                      ; String $38 = CPDR
+                    DEFC    "CPI"                       ; String $39 = CPI
+                    DEFC    "CPIR"                      ; String $3A = CPIR
+                    DEFC    "CPL"                       ; String $3B = CPL
+                    DEFC    "DAA"                       ; String $3C = DAA
+                    DEFC    "DEC"                       ; String $3D = DEC
+                    DEFC    "DI"                        ; String $3E = DI
+                    DEFC    "EI"                        ; String $3F = EI
+                    DEFC    "EX"                        ; String $40 = EX
+                    DEFC    "EXX"                       ; String $41 = EXX
+                    DEFC    "HALT"                      ; String $42 = HALT
+                    DEFC    "IM"                        ; String $43 = IM
+                    DEFC    "IN"                        ; String $44 = IN
+                    DEFC    "INC"                       ; String $45 = INC
+                    DEFC    "IND"                       ; String $46 = IND
+                    DEFC    "INDR"                      ; String $47 = INDR
+                    DEFC    "INI"                       ; String $48 = INI
+                    DEFC    "INIR"                      ; String $49 = INIR
+                    DEFC    "LD"                        ; String $4A = LD
+                    DEFC    "LDD"                       ; String $4B = LDD
+                    DEFC    "LDDR"                      ; String $4C = LDDR
+                    DEFC    "LDI"                       ; String $4D = LDI
+                    DEFC    "LDIR"                      ; String $4E = LDIR
+                    DEFC    "NEG"                       ; String $4F = NEG
+                    DEFC    "NOP"                       ; String $50 = NOP
+                    DEFC    "OR"                        ; String $51 = OR
+                    DEFC    "OTDR"                      ; String $52 = OTDR
+                    DEFC    "OTIR"                      ; String $53 = OTIR
+                    DEFC    "OUT"                       ; String $54 = OUT
+                    DEFC    "OUTD"                      ; String $55 = OUTD
+                    DEFC    "OUTI"                      ; String $56 = OUTI
+                    DEFC    "POP"                       ; String $57 = POP
+                    DEFC    "PUSH"                      ; String $58 = PUSH
+                    DEFC    "RES"                       ; String $59 = RES
+                    DEFC    "RL"                        ; String $5A = RL
+                    DEFC    "RLA"                       ; String $5B = RLA
+                    DEFC    "RLC"                       ; String $5C = RLC
+                    DEFC    "RLCA"                      ; String $5D = RLCA
+                    DEFC    "RLD"                       ; String $5E = RLD
+                    DEFC    "RR"                        ; String $5F = RR
+                    DEFC    "RRA"                       ; String $60 = RRA
+                    DEFC    "RRC"                       ; String $61 = RRC
+                    DEFC    "RRCA"                      ; String $62 = RRCA
+                    DEFC    "RRD"                       ; String $63 = RRD
+                    DEFC    "SBC"                       ; String $64 = SBC
+                    DEFC    "SCF"                       ; String $65 = SCF
+                    DEFC    "SET"                       ; String $66 = SET
+                    DEFC    "SLA"                       ; String $67 = SLA
+                    DEFC    "SLL"                       ; String $68 = SLL
+                    DEFC    "SRA"                       ; String $69 = SRA
+                    DEFC    "SRL"                       ; String $6A = SRL
+                    DEFC    "SUB"                       ; String $6B = SUB
+                    DEFC    "XOR"                       ; String $6C = XOR
+                    DEFC    "????"                      ; String $6D = ????
+                    DEFC    "H"                         ; String $6E = H
+                    DEFC    "IXH"                       ; String $6F = IXH
+                    DEFC    "IYH"                       ; String $70 = IYH
+                    DEFC    "L"                         ; String $71 = L
+                    DEFC    "IXL"                       ; String $72 = IXL
+                    DEFC    "IYL"                       ; String $73 = IYL
 
 
 ; Instruction table: (DisInst)
@@ -392,10 +304,9 @@ DisMaskTable:
 ; **********************************************************************************************************************
 
 ; Strings
-StrMore:            DEFM    "more?"
 StrLabels:
-                    DEFM    "from:"
-                    DEFM    "  to:"
+                    DEFM    "from: $"
+                    DEFM    "  to: $"
 
 
 ; Relative reallocation addresses ** MUST be below StrLabels **
@@ -433,10 +344,10 @@ kStrBuffer:
                     DEFW    Realloc_26-START+1
                     DEFW    Realloc_27-START+1
                     DEFW    Realloc_28-START+1
-                    DEFW    Realloc_29-START+1
-                    DEFW    Realloc_30-START+1
-                    DEFW    Realloc_31-START+2          ; ld ix,nn
-                    DEFW    Realloc_32-START+2          ; ld (nn),de
+                    DEFW    Realloc_29-START+2          ; ld ix,nn
+                    DEFW    Realloc_30-START+2          ; ld (nn),de
+                    DEFW    Realloc_31-START+1
+                    DEFW    Realloc_32-START+1
                     DEFW    Realloc_33-START+1
                     DEFW    Realloc_34-START+1
                     DEFW    Realloc_35-START+1
@@ -458,7 +369,5 @@ kStrBuffer:
                     DEFW    Realloc_51-START+1
                     DEFW    Realloc_52-START+1
                     DEFW    Realloc_53-START+1
-                    DEFW    Realloc_54-START+1
-                    DEFW    Realloc_55-START+1
                     DEFW    $0000                       ; The stack begins here
 END
