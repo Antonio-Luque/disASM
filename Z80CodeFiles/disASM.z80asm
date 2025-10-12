@@ -9,6 +9,8 @@
 
 
 START               ORG     $E100                       ; Default address, can be reallocated below the System Variables
+PR_STRING           EQU     $203C                       ; Print string ROM routine
+
 Main:
                     ld      hl, Realloc_Addrs-START     ; HL points to relative address of Realloc_Addrs
                     add     hl, bc                      ; Move HL to absolute address of reallocation addresses
@@ -20,6 +22,7 @@ Init:
                     ld      hl, END-START               ; HL points to relative address of stack address
                     add     hl, bc                      ; Move HL to absolute address of stack addresses
                     ld      sp, hl                      ; Move stack at bottom of Realloc_Addrs
+
 Realloc_1           call    InputAddresses-START        ; Input "from" and "to" addresses from keyboard
 
 ; Disassembly loop
@@ -30,12 +33,10 @@ DisInstruction:
 Realloc_2           call    DisWrInstruction-START      ; Write fully disassembly instruction in buffer
 Realloc_3           ld      de, kStrBuffer-START        ; DE points to string buffer
                     ld      a, (de)                     ; Get string length
-                    ld      b, a                        ; B = length of the string
-Print_Loop:
-                    inc     de                          ; Move DE to next character of the string
-                    ld      a, (de)                     ; Get character from buffer
-                    rst     $10                         ; Print character
-                    djnz    Print_Loop                  ; Loop until end of string
+                    ld      c, a                        ; BC = length of the string
+                    ld      b, 0
+                    inc     de                          ; Move DE to the start of the string
+                    call    PR_STRING                   ; Print string
 
                     pop     de                          ; Restore string buffer address
                     pop     bc                          ; Restore "to"+1 address

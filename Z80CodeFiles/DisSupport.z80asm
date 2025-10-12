@@ -26,12 +26,12 @@ CHR_ENTER           EQU     $0D
 ; Disassembler: Write character to string buffer
 ;   On entry: A = Character to write
 ;   On exit:  BC DE HL IX IY I AF' BC' DE' HL' preserved
-; This version of write character removes bit 7 (the new string flag)
+; This version of write character removes bit 7 (the end string flag)
 ; and replaces "-" with "(HL)"
 DisWrChar:
-                    and     %01111111                   ; Mask off bit 7 (string start bit)
+                    and     %01111111                   ; Mask off bit 7 (string end bit)
                     cp      '-'                         ; Code for "(HL)" ?
-                    jr      nz, StrWrChar               ; No, print character
+                    jr      nz, StrWrChar               ; No, print character and return
 
                     ld      a, kDisBracHL               ; String number for "(HL)"
 ; Write disassembler string
@@ -303,7 +303,7 @@ Realloc_34          ld      (iStrStart-START+1), hl     ; Initialise string for 
 
                     ld      d, h                        ; Get start of instruction..
                     ld      e, l
-                    ld      a, '$'                      ; Write dollar
+                    ld      a, '$'                      ; Write '$'
 Realloc_35          call    StrWrChar-START
 Realloc_36          call    StrWrHexWord-START          ; Write start address of this line
                     ld      a, ' '                      ; Write space

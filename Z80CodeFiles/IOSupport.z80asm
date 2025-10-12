@@ -6,8 +6,6 @@
 ; ROM routines and system variables
 CLS_LOWER           EQU     $0D6E                       ; Clear the lower part of the display
 CL_ALL              EQU     $0DAF                       ; Clear the whole display area
-CHAN_OPEN           EQU     $1601                       ; Open channel subroutine
-PR_STRING           EQU     $203C                       ; Print string
 LAST_K              EQU     $5C08                       ; Last key pressed
 
 ; Control characters

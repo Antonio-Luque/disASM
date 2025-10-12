@@ -27,7 +27,7 @@ DisString:
                     DEFC    "BCDE**AF"                  ; String $10 = BCDE**AF
                     DEFC    "NZZ.NCC."                  ; String $11 = NZZ.NCC.
                     DEFC    "NZZ.NCC.POPEP.M."          ; String $12 = NZZ.NCC.POPEP.M.
-                    DEFC    "0008162432404856"          ; String $13 = 0008101820283038
+                    DEFC    "0008162432404856"          ; String $13 = 0008162432404856
                     DEFC    "01234567"                  ; String $14 = 01234567
                     DEFC    "(HL)"                      ; String $15 = (HL)
                     DEFC    "(IX+"                      ; String $16 = (IX+
@@ -269,7 +269,7 @@ DisInst:
 ;  9  ="qq"   +0      No       No   (00)  "BCDEHLAF"          2  0x30 (10)     000110
 ; 10  ="c"    +0      No       No   (00)  "NZZ NCC "          2  0x18 (01)     000101
 ; 11  ="cc"   +0      No       No   (00)  "NZZ NCC POPEP M "  2  0x38 (11)     000111
-; 12  ="t"    +0      No       No   (00)  "0008101820283038"  2  0x38 (11)     000111
+; 12  ="t"    +0      No       No   (00)  "0008162432404856"  2  0x38 (11)     000111
 ; 13  ="b"    +0      No       No   (00)  "01234567"          1  0x38 (11)     000011
 ; Each table entry is coded with the string number plus a byte containing BIILMM bits
 ; Length bit is hi for strings with two character substitutions
